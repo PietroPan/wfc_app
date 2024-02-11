@@ -4,5 +4,5 @@ defmodule WfcApp.Rust do
     crate: :wfc # must match the name of the crate in `native/rustlerpdf/Cargo.toml`
 
   def add(_arg1, _arg2), do: :erlang.nif_error(:nif_not_loaded)
-  def test_lib(), do: :erlang.nif_error(:nif_not_loaded)
+  def generate_image(_rule_set, _tile_set, _symmetry, _results, _name), do: :erlang.nif_error(:nif_not_loaded)
 end

@@ -46,17 +46,17 @@ impl Wave<'_> {
     }
 
     pub fn loop_propagate(&mut self, tile_set_size: u32, rule_set: &RuleSet, results_path: Option<&String>) {
-        match results_path {
+        /*match results_path {
             Some(path) => render::render_wave(&self,format!("{}it0.png",path),&rule_set.tiles_path),
             None => ()
-        }
+        }*/
         let mut pos = self.collapse(tile_set_size);
         let mut it = 1;
         while pos!=(-1,-1) {
-            match results_path {
+            /*match results_path {
                 Some(path) => render::render_wave(&self,format!("{}it{}.png",path,it),&rule_set.tiles_path),
                 None => ()
-            }
+            }*/
 
             //render::render_wave(&self,format!("results3/it{}.png",it));
             self.start_propagate(pos,rule_set);

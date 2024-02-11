@@ -1,0 +1,21 @@
+<h1 class="text-2x1">Projects</h1>
+
+<div id="feed" phx-update="stream" class="grid grid-cols-5 gap-5 justify-between">
+    <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("new-project-modal")}>Create Project</.button>
+    <.modal id="new-project-modal">
+        <.simple_form for={@form} phx-change="validate" phx-submit="save-post">
+            <.input field={@form[:name]} type="text" label="Project Name" required/>
+            <h1>Tiles</h1>
+            <.live_file_input upload={@uploads.tiles} required/>
+            <h1>Rule Set</h1>
+            <.live_file_input upload={@uploads.rule_set} required/>
+            <.button type="submit" phx-disable-with="Saving ...">Create Project</.button>
+        </.simple_form>
+    </.modal>
+    <a :for={{dom_id, project} <- @streams.projects} id={dom_id} href={~p"/project/#{project}"} 
+        class="flex h-full flex-col rounded border border-black hover:bg-black hover:text-white">
+        <p> <%= project.name %> </p>
+        <p> <%= project.inserted_at %> </p>
+    </a>
+
+</div>

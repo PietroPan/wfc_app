@@ -172,6 +172,15 @@ impl RuleSet {
     Ok(rule_set)
     }
 
+    pub fn new2(rules_json: &str, tiles_path: String) -> Result<RuleSet, std::io::Error> {
+        let rule_set = {
+            let file_path = fs::read_to_string(&rules_json)?;
+            serde_json::from_str::<RuleSet>(&file_path).unwrap()
+        };
+        let adjacency_rules = rule_set.adjacency_rules;
+    Ok(RuleSet{adjacency_rules, tiles_path})
+    }
+
     pub fn to_json(&self, new_json: &str) {
         let file = File::options().write(true).create(true).open(new_json).expect("Unable to open file");
         serde_json::to_writer(file, &self).unwrap();

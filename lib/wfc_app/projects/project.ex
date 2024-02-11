@@ -7,6 +7,7 @@ defmodule WfcApp.Projects.Project do
   schema "projects" do
     field :images_path, :string
     field :jason_path, :string
+    field :name, :string
     belongs_to :user, User
 
     timestamps()
@@ -15,7 +16,7 @@ defmodule WfcApp.Projects.Project do
   @doc false
   def changeset(project, attrs) do
     project
-    |> cast(attrs, [:images_path, :jason_path, :user_id])
-    |> validate_required([:images_path, :jason_path, :user_id])
+    |> cast(attrs, [:images_path, :jason_path, :name, :user_id])
+    |> validate_required([:images_path, :jason_path, :name, :user_id])
   end
 end

@@ -15,11 +15,11 @@ fn add(a: i64, b: i64) -> i64 {
 }
 
 #[rustler::nif]
-pub fn test_lib(){
-    let mut rule_set = RuleSet::new("poke_tile_set.json").unwrap();
+pub fn generate_image(rule_set: &str, tile_set: &str, symmetry: &str, results: &str, name: &str){
+    let mut rule_set = RuleSet::new2(rule_set,tile_set.to_string()).unwrap();
     rule_set.ini_expand();
-    let sym_d = Symmetry::symmetry_dictionary("symmetry.json").unwrap();
-    let result_path = "results/".to_string();
+    let sym_d = Symmetry::symmetry_dictionary(symmetry).unwrap();
+    let result_path = results.to_string();
     let new_rules = TileSet::expand(&sym_d,&mut rule_set);
 
     let n_rule_set = rule_set.expand(&sym_d,&new_rules);
@@ -40,7 +40,7 @@ pub fn test_lib(){
     wave.set_pos((4,0), "r2.png".to_string(),&n_rule_set);
 
     wave.loop_propagate(tile_set_size,&n_rule_set,Some(&result_path));
-    render::render_wave(&wave,format!("{}final.png",result_path),&n_rule_set.tiles_path);
+    render::render_wave(&wave,format!("{}{}.png",result_path,name),&n_rule_set.tiles_path);
 }
 
-rustler::init!("Elixir.WfcApp.Rust", [add,test_lib]);
+rustler::init!("Elixir.WfcApp.Rust", [add,generate_image]);

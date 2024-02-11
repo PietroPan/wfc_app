@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::fs;
 use serde_derive::{Deserialize, Serialize};
+use image;
 use crate::tile_set::AdjacencyRule;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -31,6 +32,7 @@ impl Symmetry {
                 e_tiles.push(*transformation);
             } 
         }
+        //dbg!(&symmetry_dictionary[&rule.symmetry].eq);
         //Self::transform(tile_path,4);
     }
 
