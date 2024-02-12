@@ -64,7 +64,7 @@ defmodule WfcAppWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
 
     live_session :require_authenticated_user,
-      on_mount: [{WfcAppWeb.UserAuth, :ensure_authenticated}] do
+      on_mount: [{WfcAppWeb.UserAuth, :ensure_authenticated},{WfcAppWeb.UserAuth, :mount_current_user}] do
       live "/home", HomeLive.Home, :index
       live "/project/:project_id", ProjectLive.Project, :index
       live "/users/settings", UserSettingsLive, :edit

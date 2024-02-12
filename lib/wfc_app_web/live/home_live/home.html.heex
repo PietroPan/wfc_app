@@ -12,10 +12,10 @@
             <.button type="submit" phx-disable-with="Saving ...">Create Project</.button>
         </.simple_form>
     </.modal>
-    <a :for={{dom_id, project} <- @streams.projects} id={dom_id} href={~p"/project/#{project}"} 
+    <.link navigate={~p"/project/#{project}"} :for={{dom_id, project} <- @streams.projects} id={dom_id} 
         class="flex h-full flex-col rounded border border-black hover:bg-black hover:text-white">
         <p> <%= project.name %> </p>
         <p> <%= project.inserted_at %> </p>
-    </a>
+    </.link>
 
 </div>

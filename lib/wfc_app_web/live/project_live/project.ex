@@ -8,6 +8,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
   @impl true
   def mount(params, _session, socket) do
+    %{current_user: user} = socket.assigns
     Logger.debug "params info: #{inspect(params)}"
 
     project = Projects.get_project(params["project_id"])
@@ -19,7 +20,19 @@ defmodule WfcAppWeb.ProjectLive.Project do
       |> assign(project: project)
       |> assign(tt: "/images/final#{project.id}.png")
 
-    {:ok, socket}
+    project_user = Projects.get_correspondent_user(project.id)
+    cond do
+      project_user == user.id ->
+        {:ok, socket}
+      true ->
+        socket =
+          socket
+          |> put_flash(:error, "Can't access this resource!")
+          |> push_navigate(to: ~p"/home")
+
+        {:ok, socket}
+    end
+
   end
 
   @impl true

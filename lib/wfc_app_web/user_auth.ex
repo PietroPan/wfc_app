@@ -1,6 +1,8 @@
 defmodule WfcAppWeb.UserAuth do
   use WfcAppWeb, :verified_routes
 
+  require Logger
+
   import Plug.Conn
   import Phoenix.Controller
 

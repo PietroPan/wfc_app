@@ -24,4 +24,9 @@ defmodule WfcApp.Projects do
     p = Repo.get(Project, project_id)
     %{id: p.id, name: p.name, images_path: p.images_path, jason_path: p.jason_path}
   end
+
+  def get_correspondent_user(project_id) do
+    p = Repo.get(Project, project_id)
+    p.user_id
+  end
 end
