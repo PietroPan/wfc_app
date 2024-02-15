@@ -1,3 +1,9 @@
 <h1 class="text-2x1">Project: <%=@project.name%></h1>
 <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click="generate-image">Generate Image</.button>
 <img src={@tt} width="500" height="600"> 
+
+<div id="tile_grid" phx-update="stream" class="grid grid-cols-10 gap-1 auto-rows-[100px]">
+    <div :for={{dom_id, image} <- @streams.images} id={dom_id} class="bg-slate-500">
+    <img src={elem(image,1)} width="100" height="100">
+    </div>
+</div>

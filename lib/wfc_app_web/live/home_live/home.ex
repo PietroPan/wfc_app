@@ -21,6 +21,8 @@ defmodule WfcAppWeb.HomeLive.Home do
       |> allow_upload(:rule_set, accept: ~w(.json), max_entries: 1)
       |> stream(:projects, Projects.list_projects(user.id))
 
+    Logger.debug("PROJECTSSSSSS: #{inspect(Projects.list_projects(user.id))}")
+
     {:ok, socket}
   end
 

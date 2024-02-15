@@ -26,6 +26,20 @@ impl Wave<'_> {
         Wave { size, regions }
     }
 
+    pub fn list_tiles(&self) -> String {
+        let mut result = "".to_string();
+        let (x,y) = self.size;
+        for i in 0..x {
+            for j in 0..y {
+                let region = self.regions.get(&(j,i)).unwrap();
+                let tile = region.get_tile();
+                result.push_str(&tile);
+                result.push_str(" ");
+            }
+        }
+        return result;
+    }
+
     pub fn collapse(&mut self, tile_set_size: u32) -> (i32, i32) {
         let (x,y) = self.lowest_entropy(tile_set_size);
         if (x,y) != (-1,-1) {
@@ -143,6 +157,10 @@ impl Region<'_> {
             superposition,
             entropy
         }
+    }
+
+    pub fn get_tile(&self) -> String {
+        return self.superposition.keys().next().unwrap().to_string();
     }
 
     pub fn set_tile(&mut self, tile: String) {

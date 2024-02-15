@@ -15,7 +15,7 @@ fn add(a: i64, b: i64) -> i64 {
 }
 
 #[rustler::nif]
-pub fn generate_image(rule_set: &str, tile_set: &str, symmetry: &str, results: &str, name: &str){
+pub fn generate_image(rule_set: &str, tile_set: &str, symmetry: &str, (x,y): (i32,i32), results: &str, name: &str) -> String{
     let mut rule_set = RuleSet::new2(rule_set,tile_set.to_string()).unwrap();
     rule_set.ini_expand();
     let sym_d = Symmetry::symmetry_dictionary(symmetry).unwrap();
@@ -28,19 +28,20 @@ pub fn generate_image(rule_set: &str, tile_set: &str, symmetry: &str, results: &
     let tile_set_size = tile_set.size;
 
     let mut probabilities = HashMap::new();
-    probabilities.insert("c.png".to_string(), 500);
-    probabilities.insert("a.png".to_string(), 100);
-    probabilities.insert("r1.png".to_string(), 500);
-    probabilities.insert("r2.png".to_string(), 100);
-    let mut wave = Wave::new(&tile_set, (5,5),probabilities);
+    //probabilities.insert("c.png".to_string(), 500);
+    //probabilities.insert("a.png".to_string(), 100);
+    //probabilities.insert("r1.png".to_string(), 500);
+    //probabilities.insert("r2.png".to_string(), 100);
+    let mut wave = Wave::new(&tile_set, (x,y),probabilities);
 
-    wave.set_pos((0,0), "r2.png".to_string(),&n_rule_set);
-    wave.set_pos((4,4), "r2.png".to_string(),&n_rule_set);
-    wave.set_pos((0,4), "r2.png".to_string(),&n_rule_set);
-    wave.set_pos((4,0), "r2.png".to_string(),&n_rule_set);
+    //wave.set_pos((0,0), "r2.png".to_string(),&n_rule_set);
+    //wave.set_pos((4,4), "r2.png".to_string(),&n_rule_set);
+    //wave.set_pos((0,4), "r2.png".to_string(),&n_rule_set);
+    //wave.set_pos((4,0), "r2.png".to_string(),&n_rule_set);
 
     wave.loop_propagate(tile_set_size,&n_rule_set,Some(&result_path));
     render::render_wave(&wave,format!("{}{}.png",result_path,name),&n_rule_set.tiles_path);
+    return wave.list_tiles();
 }
 
 rustler::init!("Elixir.WfcApp.Rust", [add,generate_image]);

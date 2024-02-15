@@ -1,13 +1,22 @@
 defmodule WfcApp.Projects do
   import Ecto.Query, warn: false
+  require Logger
 
   alias WfcApp.Repo
   alias WfcApp.Projects.Project
 
   def save(project_params) do
+    Logger.debug "IM INNNNNNNNNNNNNNNNNN: #{inspect(project_params)}"
+
     %Project{}
     |> Project.changeset(project_params)
     |> Repo.insert()
+  end
+
+  def update_wave(id,wave) do
+  Repo.get!(Project, id)
+  |> Ecto.Changeset.change(wave: wave)
+  |> Repo.update!()
   end
 
   def list_projects(user_id) do
@@ -21,9 +30,9 @@ defmodule WfcApp.Projects do
   end
 
   def get_project(project_id) do
-    p = Repo.get(Project, project_id)
-    %{id: p.id, name: p.name, images_path: p.images_path, jason_path: p.jason_path}
+    Repo.get(Project, project_id)
   end
+
 
   def get_correspondent_user(project_id) do
     p = Repo.get(Project, project_id)
