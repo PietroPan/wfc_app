@@ -15,6 +15,9 @@ module.exports = {
     extend: {
       colors: {
         brand: "#FD4F00",
+      },
+      spacing: {
+        's': '0.10rem',
       }
     },
   },

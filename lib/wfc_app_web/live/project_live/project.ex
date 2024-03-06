@@ -22,7 +22,9 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
     socket =
       socket
+      |> push_event("grid-size", %{cols: project.x})
       |> assign(project: project)
+      |> assign(form: to_form(%{}))
       |> assign(tt: "/images/final#{project.id}.png")
       |> stream_configure(:images, dom_id: &("image-#{elem(&1,0)}"))
       |> stream(:images, stream)
@@ -44,9 +46,14 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
   @impl true
   def handle_event("generate-image", params, socket) do
+    x = String.to_integer(params["x"])
+    y = String.to_integer(params["y"])
     %{project: project} = socket.assigns
-    image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{project.x,project.y},"priv/static/images/","final#{project.id}")
-    Projects.update_wave(project.id,image_list)
+    Logger.debug "project-SOCKET: #{inspect(project)}"
+    image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{x,y},"priv/static/images/","final#{project.id}")
+    Projects.update_wave(project.id,image_list,x,y)
+    #JS.dispatch("test", to: "#tile_grid", detail: %{cols: project.x})
     {:noreply, socket}
   end
+
 end

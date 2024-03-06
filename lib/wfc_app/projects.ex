@@ -13,9 +13,11 @@ defmodule WfcApp.Projects do
     |> Repo.insert()
   end
 
-  def update_wave(id,wave) do
+  def update_wave(id,wave,x,y) do
   Repo.get!(Project, id)
   |> Ecto.Changeset.change(wave: wave)
+  |> Ecto.Changeset.change(x: x)
+  |> Ecto.Changeset.change(y: y)
   |> Repo.update!()
   end
 

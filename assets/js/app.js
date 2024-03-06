@@ -30,6 +30,13 @@ topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
 window.addEventListener("phx:page-loading-start", _info => topbar.show(300))
 window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
+const tile_grid = document.querySelector('#tile_grid')
+window.addEventListener('phx:grid-size', e => {
+    console.log("grid-size!", e.detail.cols)
+    document.querySelector('#tile_grid')
+    .style['grid-template-columns'] = `repeat(${e.detail.cols}, minmax(0, 50px))`
+})
+
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 
@@ -37,5 +44,7 @@ liveSocket.connect()
 // >> liveSocket.enableDebug()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
+
 window.liveSocket = liveSocket
 
+//{JS.dispatch("test", to: "#tile_grid", detail: %{cols: @project.x})}HG
