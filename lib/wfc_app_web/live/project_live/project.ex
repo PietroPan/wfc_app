@@ -19,7 +19,8 @@ defmodule WfcAppWeb.ProjectLive.Project do
     |> String.split()
     |> Enum.map(fn x -> "#{project.images_path}#{x}" end)
     stream = Enum.zip(0..length(image_list),image_list)
-
+    |> Enum.map(fn {k,v} -> %{:id => k, :tile => v} end)
+    Logger.debug "STREAM: #{inspect(stream)}"
     {prob_map,prob_list} = create_prob_map("priv/static#{project.images_path}", project.probabilities)
 
     socket =
@@ -30,8 +31,8 @@ defmodule WfcAppWeb.ProjectLive.Project do
       |> assign(tt: "/images/final#{project.id}.png")
       |> assign(probs: prob_map)
       |> stream(:probs, prob_list)
-      |> stream_configure(:images, dom_id: &("image-#{elem(&1,0)}"))
       |> stream(:images, stream)
+      |> assign(:s_tiles, project.starting_tiles)
 
     project_user = Projects.get_correspondent_user(project.id)
     cond do
@@ -78,8 +79,11 @@ defmodule WfcAppWeb.ProjectLive.Project do
     |> Enum.reduce(%{}, fn {k,v}, acc -> Map.put(acc,k,v) end)
     Logger.debug "NEW MAP: #{inspect(nmap)}"
     Projects.update_probabilities(project.id,nmap)
-
-    image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{x,y},"priv/static/images/","final#{project.id}",nmap)
+    s_tiles =
+      socket.assigns.s_tiles
+      |> Enum.map(fn {k,v} -> {k,Path.basename(v)} end)
+      |> Enum.reduce(%{}, fn {k,v}, acc -> Map.put(acc,k,v) end)
+    image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{x,y},"priv/static/images/","final#{project.id}",nmap,s_tiles)
     Projects.update_wave(project.id,image_list,x,y)
 
     {:noreply, socket}
@@ -87,7 +91,11 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
   @impl true
   def handle_event("update_tile", params, socket) do
-    Logger.debug "update_tile: #{inspect(params)}"
+    %{project: project} = socket.assigns
+    Projects.update_starting_tiles(project.id,Map.put(project.starting_tiles, socket.assigns.pos, "#{project.images_path}#{params["tile"]}"))
+    socket = socket
+      |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")
+    Logger.debug "update_tile: #{inspect(socket)}"
     {:noreply, socket}
   end
 
@@ -97,13 +105,23 @@ defmodule WfcAppWeb.ProjectLive.Project do
     {:noreply, socket |> assign(pos: params["pos"])}
   end
 
-  @imple true
+  @impl true
   def handle_event("debug", params, socket) do
     Logger.debug "DEBUG: #{inspect(params)}"
     {:noreply, socket}
   end
 
-end
+  @impl true
+  def handle_event("clear_s_tiles", params, socket) do
+    %{project: project} = socket.assigns
+    Projects.update_starting_tiles(project.id,%{})
+    {:noreply, socket |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}
+  end
 
-#Add prob map to rust input
-#Change img grid to pop up to change tile
+  @impl true
+  def handle_event("clear_s_tile", params, socket) do
+    %{project: project} = socket.assigns
+    Projects.update_starting_tiles(project.id,Map.drop(project.starting_tiles,[socket.assigns.pos]))
+    {:noreply, socket |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}
+  end
+end

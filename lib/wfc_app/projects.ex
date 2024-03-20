@@ -48,4 +48,10 @@ defmodule WfcApp.Projects do
     |> Ecto.Changeset.change(probabilities: prob_map)
     |> Repo.update()
   end
+
+  def update_starting_tiles(project_id, s_tiles) do
+    get_project!(project_id)
+    |> Ecto.Changeset.change(starting_tiles: s_tiles)
+    |> Repo.update()
+  end
 end

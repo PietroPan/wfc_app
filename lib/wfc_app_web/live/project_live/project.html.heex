@@ -20,15 +20,27 @@
 
     <div id="tile_grid" phx-update="stream" class="grid grid-cols-10 gap-s auto-rows-[50px]">
         <div :for={{dom_id, image} <- @streams.images} id={dom_id} class="bg-slate-500">
-        <button phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={elem(image,0)}>
-            <img src={elem(image,1)} width="50" height="50">
+        <button phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={image.id}>
+            <%= if Map.has_key?(@project.starting_tiles,Integer.to_string(image.id)) do %>
+                <div class="border-4">
+                    <img src={@project.starting_tiles[Integer.to_string(image.id)]} width="50" height="50">
+                </div>
+            <% else %>
+                <img src={image.tile} width="50" height="50">
+            <% end %>
         </button>
         </div>
     </div>
+    
     <.modal id="choose_tile">
-        <.simple_form for={@form} phx-submit="update_tile">
-            <.input field={@form[:new]} type="text" label="new" value="new_tile" required/>
-            <.button type="submit" phx-disable-with="Saving ...">TEST</.button>
-        </.simple_form>
+        <div class="grid grid-cols-5">
+            <div :for={{dom_id, prob} <- @streams.probs} id={dom_id}>
+                <button phx-click="update_tile" type="submit" phx-disable-with="Saving ..." phx-value-tile={prob.id}>
+                    <img src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
+                </button>
+            </div>
+        </div>
+        <.button phx-click="clear_s_tile"> Unlock Tile </.button>
     </.modal>
+    <.button phx-click="clear_s_tiles"> Clear Locked Tiles </.button>
 </div>
