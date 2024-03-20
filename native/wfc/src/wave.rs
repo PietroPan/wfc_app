@@ -29,8 +29,8 @@ impl Wave<'_> {
     pub fn list_tiles(&self) -> String {
         let mut result = "".to_string();
         let (x,y) = self.size;
-        for i in 0..x {
-            for j in 0..y {
+        for i in 0..y {
+            for j in 0..x {
                 let region = self.regions.get(&(j,i)).unwrap();
                 let tile = region.get_tile();
                 result.push_str(&tile);

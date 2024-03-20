@@ -13,6 +13,8 @@ defmodule WfcApp.Projects do
     |> Repo.insert()
   end
 
+  def get_project!(id), do: Repo.get!(Project, id)
+
   def update_wave(id,wave,x,y) do
   Repo.get!(Project, id)
   |> Ecto.Changeset.change(wave: wave)
@@ -39,5 +41,11 @@ defmodule WfcApp.Projects do
   def get_correspondent_user(project_id) do
     p = Repo.get(Project, project_id)
     p.user_id
+  end
+
+  def update_probabilities(project_id, prob_map) do
+    get_project!(project_id)
+    |> Ecto.Changeset.change(probabilities: prob_map)
+    |> Repo.update()
   end
 end

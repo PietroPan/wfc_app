@@ -10,4 +10,10 @@ defmodule WfcApp do
   def testR do
     WfcApp.Rust.add(1,4)
   end
+
+  def testFiles(dir) do
+    File.dir?(dir)
+  end
 end
+
+# "priv/static/uploads/live_view_upload-1707672399-364678243519-2ext"

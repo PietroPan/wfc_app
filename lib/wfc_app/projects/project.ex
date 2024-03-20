@@ -11,6 +11,7 @@ defmodule WfcApp.Projects.Project do
     field :x, :integer, default: 10
     field :y, :integer, default: 10
     field :wave, :string, default: ""
+    field :probabilities, :map, default: %{}
     belongs_to :user, User
 
     timestamps()
@@ -19,7 +20,7 @@ defmodule WfcApp.Projects.Project do
   @doc false
   def changeset(project, attrs) do
     project
-    |> cast(attrs, [:images_path, :jason_path, :name, :x, :y, :wave, :user_id])
+    |> cast(attrs, [:images_path, :jason_path, :name, :x, :y, :wave, :user_id, :probabilities])
     |> validate_required([:images_path, :jason_path, :name, :x, :y, :wave, :user_id])
   end
 end

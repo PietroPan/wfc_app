@@ -2,10 +2,16 @@
     <h1 class="text-2x1">Project: <%=@project.name%></h1>
     <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("generate-image-modal")}>Generate Image</.button>
     <.modal id="generate-image-modal">
-        <.simple_form for={@form} phx-submit="generate-image">
+        <.simple_form for={@form} phx-submit="generate_image">
             <div class="flex">
                 <.input field={@form[:x]} type="text" label="X" value={@project.x} required/>
                 <.input field={@form[:y]} type="text" label="Y" value={@project.y} required/>
+            </div>
+            <h1 class="font-bold"> Change Tile Probabilities: </h1>
+            <div :for={{dom_id, prob} <- @streams.probs} id={dom_id}>
+                <h1> <%= prob.id %> </h1>
+                <img src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
+                <.input field={@form[prob.id]}, type="range" min="0" max="500" step="1" value={prob.prob}/>
             </div>
             <.button type="submit" phx-disable-with="Saving ...">Generate Image</.button>
         </.simple_form>
@@ -14,7 +20,15 @@
 
     <div id="tile_grid" phx-update="stream" class="grid grid-cols-10 gap-s auto-rows-[50px]">
         <div :for={{dom_id, image} <- @streams.images} id={dom_id} class="bg-slate-500">
-        <img src={elem(image,1)} width="50" height="50">
+        <button phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={elem(image,0)}>
+            <img src={elem(image,1)} width="50" height="50">
+        </button>
         </div>
     </div>
+    <.modal id="choose_tile">
+        <.simple_form for={@form} phx-submit="update_tile">
+            <.input field={@form[:new]} type="text" label="new" value="new_tile" required/>
+            <.button type="submit" phx-disable-with="Saving ...">TEST</.button>
+        </.simple_form>
+    </.modal>
 </div>
