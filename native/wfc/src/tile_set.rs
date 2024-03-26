@@ -40,7 +40,7 @@ impl TileSet {
         
         for (tile,rules) in rule_set.clone().adjacency_rules {
             let tile_path = format!("{}{}", rule_set.tiles_path, tile);
-            Symmetry::apply_transformations(&tile_path, &rules, symmetry_dictionary);
+            Symmetry::apply_transformations(&tile_path, &tile, &rules, symmetry_dictionary,&mut new_rules);
             let symmetry = rules.symmetry.as_str();
             match symmetry{
                 "B" => {
@@ -99,7 +99,6 @@ impl TileSet {
                 _ => println!("OI")
             }
         }
-
         return new_rules;
     }
 }
@@ -205,6 +204,7 @@ impl RuleSet {
                 }
             }
         } else {
+            println!("heeeeeeeeeeeeeeereeeeeeeeeeee");
             self.adjacency_rules.insert(tile1, AdjacencyRule::new_rule(symmetry, direction, tile2));
         }
     }

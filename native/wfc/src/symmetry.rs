@@ -19,10 +19,11 @@ impl Symmetry {
     Ok(symmetry_dictionary)
     }
 
-    pub fn apply_transformations(tile_path: &String, rule: &AdjacencyRule, symmetry_dictionary: &HashMap<String, Symmetry>){
+    pub fn apply_transformations(tile_path: &String, _tile: &String, rule: &AdjacencyRule, symmetry_dictionary: &HashMap<String, Symmetry>, _new_rules: &mut HashMap<String,AdjacencyRule>){
         
         dbg!(&rule.symmetry);
         let eq = &symmetry_dictionary[&rule.symmetry].eq;
+        //let sym = &symmetry_dictionary[&rule.symmetry].sym;
         let mut e_tiles = Vec::new();
         e_tiles.push(0 as u32);
         for i in 1..8 {
@@ -30,6 +31,8 @@ impl Symmetry {
             if !(e_tiles.contains(transformation)) {
                 Self::transform(tile_path, i);
                 e_tiles.push(*transformation);
+                //Always add new symmetry, I think it's not necessary tho
+                //new_rules.insert(RuleSet::nnew_tile_name(tile,*transformation), AdjacencyRule::new_empty(sym[i as usize].to_string()));
             } 
         }
         //dbg!(&symmetry_dictionary[&rule.symmetry].eq);

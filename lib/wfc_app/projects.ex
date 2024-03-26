@@ -54,4 +54,17 @@ defmodule WfcApp.Projects do
     |> Ecto.Changeset.change(starting_tiles: s_tiles)
     |> Repo.update()
   end
+
+  def add_rule(project_id, tileA, dir, tileB) do
+    project=get_project!(project_id)
+    Ecto.Changeset.change(project, new_rules: ["#{tileA} #{dir} #{tileB}"| project.new_rules])
+    |> Repo.update()
+  end
+
+  def remove_rule(project_id, rule_id) do
+    project=get_project!(project_id)
+    {_, n_rules} = List.pop_at(project.new_rules,rule_id)
+    Ecto.Changeset.change(project, new_rules: n_rules)
+    |> Repo.update()
+  end
 end

@@ -3,7 +3,6 @@ defmodule WfcAppWeb.ProjectLive.Project do
   require Logger
 
   alias WfcApp.Projects
-  alias WfcApp.Projects.Project
   alias WfcApp.Rust
 
   @impl true
@@ -23,6 +22,13 @@ defmodule WfcAppWeb.ProjectLive.Project do
     Logger.debug "STREAM: #{inspect(stream)}"
     {prob_map,prob_list} = create_prob_map("priv/static#{project.images_path}", project.probabilities)
 
+    Logger.debug "NEW RULES: #{inspect(project.new_rules)}"
+    n_rules = project.new_rules
+    |> Enum.reduce([], fn rule, acc ->
+      [tA,dir,tB] = rule |> String.split
+
+      [%{id: length(acc),rule: %{tileA: tA, dir: dir_to_string(dir),tileB: tB}}|acc] end)
+
     socket =
       socket
       |> push_event("grid-size", %{cols: project.x})
@@ -32,6 +38,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
       |> assign(probs: prob_map)
       |> stream(:probs, prob_list)
       |> stream(:images, stream)
+      |> stream(:n_rules, n_rules)
       |> assign(:s_tiles, project.starting_tiles)
 
     project_user = Projects.get_correspondent_user(project.id)
@@ -47,6 +54,16 @@ defmodule WfcAppWeb.ProjectLive.Project do
         {:ok, socket}
     end
 
+  end
+
+  def dir_to_string(dir) do
+    case dir do
+      "0" -> "Up"
+      "1" -> "Right"
+      "2" -> "Down"
+      "3" -> "Left"
+      _ -> "ERROR"
+    end
   end
 
   def create_prob_map(images_path, saved_probs) do
@@ -75,7 +92,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
     #Update probabilities
     nmap=socket.assigns.probs
-    |> Enum.map(fn {k,v} -> {k,String.to_integer(params[k])} end)
+    |> Enum.map(fn {k,_v} -> {k,String.to_integer(params[k])} end)
     |> Enum.reduce(%{}, fn {k,v}, acc -> Map.put(acc,k,v) end)
     Logger.debug "NEW MAP: #{inspect(nmap)}"
     Projects.update_probabilities(project.id,nmap)
@@ -83,7 +100,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
       socket.assigns.s_tiles
       |> Enum.map(fn {k,v} -> {k,Path.basename(v)} end)
       |> Enum.reduce(%{}, fn {k,v}, acc -> Map.put(acc,k,v) end)
-    image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{x,y},"priv/static/images/","final#{project.id}",nmap,s_tiles)
+    image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{x,y},"priv/static/images/","final#{project.id}",nmap,s_tiles,project.new_rules)
     Projects.update_wave(project.id,image_list,x,y)
 
     {:noreply, socket}
@@ -112,14 +129,30 @@ defmodule WfcAppWeb.ProjectLive.Project do
   end
 
   @impl true
-  def handle_event("clear_s_tiles", params, socket) do
+  def handle_event("add_rule",params, socket) do
+    Projects.add_rule(socket.assigns.project.id,params["tileA"],params["dir"],params["tileB"])
+    socket =
+      socket
+      |> put_flash(:info, "Rule added successfully")
+      |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("remove_rule", params, socket) do
+    Projects.remove_rule(socket.assigns.project.id,String.to_integer(params["id"]))
+    {:noreply, socket |> put_flash(:info, "Rule removed successfully") |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}
+  end
+
+  @impl true
+  def handle_event("clear_s_tiles", _params, socket) do
     %{project: project} = socket.assigns
     Projects.update_starting_tiles(project.id,%{})
     {:noreply, socket |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}
   end
 
   @impl true
-  def handle_event("clear_s_tile", params, socket) do
+  def handle_event("clear_s_tile", _params, socket) do
     %{project: project} = socket.assigns
     Projects.update_starting_tiles(project.id,Map.drop(project.starting_tiles,[socket.assigns.pos]))
     {:noreply, socket |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}

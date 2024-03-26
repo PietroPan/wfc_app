@@ -44,7 +44,7 @@ defmodule WfcAppWeb.HomeLive.Home do
     Logger.debug "zip value: #{inspect(full_images_path)}"
 
     case :zip.unzip(full_images_path, [{:cwd, unzip_path}]) do
-      {:ok, content} ->
+      {:ok, _content} ->
         Logger.info "Unziped"
         full_images_path = "#{images_path}ext/images/"
         project_params

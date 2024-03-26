@@ -13,6 +13,7 @@ defmodule WfcApp.Projects.Project do
     field :wave, :string, default: ""
     field :probabilities, :map, default: %{}
     field :starting_tiles, :map, default: %{}
+    field :new_rules, {:array, :string}, default: []
     belongs_to :user, User
 
     timestamps()

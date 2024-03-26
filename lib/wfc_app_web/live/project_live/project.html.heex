@@ -3,6 +3,7 @@
     <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("generate-image-modal")}>Generate Image</.button>
     <.modal id="generate-image-modal">
         <.simple_form for={@form} phx-submit="generate_image">
+            <.button type="submit" phx-disable-with="Saving ...">Generate Image</.button>
             <div class="flex">
                 <.input field={@form[:x]} type="text" label="X" value={@project.x} required/>
                 <.input field={@form[:y]} type="text" label="Y" value={@project.y} required/>
@@ -36,11 +37,36 @@
         <div class="grid grid-cols-5">
             <div :for={{dom_id, prob} <- @streams.probs} id={dom_id}>
                 <button phx-click="update_tile" type="submit" phx-disable-with="Saving ..." phx-value-tile={prob.id}>
-                    <img src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
+                    <label for="img"> <%= prob.id %></label>
+                    <img id="img" src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
                 </button>
             </div>
         </div>
         <.button phx-click="clear_s_tile"> Unlock Tile </.button>
     </.modal>
     <.button phx-click="clear_s_tiles"> Clear Locked Tiles </.button>
+
+    <.button phx-click={show_modal("new_rule")}> Add New Rule </.button>
+    <.modal id ="new_rule">
+        <.simple_form for={@form} phx-submit="add_rule">
+            <.input field={@form[:tileA]} type="text" label="Tile A" required/>
+            <label for="dir">Tile A is</label>
+            <select id="dir" name="dir" label="Direction">
+                <option value="0">Up</option>
+                <option value="1">Right</option>
+                <option value="2">Down</option>
+                <option value="3">Left</option>
+            </select>
+            <label for="dir">from Tile B</label>
+            <.input field={@form[:tileB]} type="text" label="Tile B" required/>
+            <.button type="submit" phx-disable-with="Saving ...">Add Rule</.button>
+        </.simple_form>
+    </.modal>
+    
+        <div :for={{dom_id, n_rule} <- @streams.n_rules} id={dom_id}>
+            <h1>Rule <%= n_rule.id %> : <%= n_rule.rule.tileA %> is <%= n_rule.rule.dir %> from <%= n_rule.rule.tileB %> </h1>
+            <.button phx-click="remove_rule" phx-value-id={n_rule.id}>
+            Remove Rule
+            </.button>
+        </div>
 </div>
