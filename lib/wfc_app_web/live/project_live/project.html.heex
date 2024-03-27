@@ -17,6 +17,12 @@
                 <h1> <%= prob.id %> </h1>
                 <img src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
                 <.input field={@form[prob.id]}, type="range" min="0" max="500" step="1" value={prob.prob}/>
+                <div class="flex justify-evenly">
+                <span class="text-sm text-gray-500 dark:text-gray-400">1x</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">2x</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">3x</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">4x</span>
+                </div>
             </div>
             <.button type="submit" phx-disable-with="Saving ...">Generate Image</.button>
         </.simple_form>
@@ -50,36 +56,71 @@
         </div>
         <.button phx-click="clear_s_tile"> Unlock Tile </.button>
     </.modal>
+
     <.button phx-click="clear_s_tiles"> Clear Locked Tiles </.button>
     <a href={@tt} download>
         <.button> Download Image </.button>
     </a>
-    <div class="pt-5"></div>
-    <.button phx-click={show_modal("new_rule")}> Add New Rule </.button>
-    <.modal id ="new_rule">
-        <.simple_form for={@form} phx-submit="add_rule">
-            <.input field={@form[:tileA]} type="text" label="Tile A" required/>
-            <label for="dir">Tile A is</label>
+
+    <hr class="w-full h-px border-0 rounded my-4 bg-black">
+
+    <h1 class="text-xl font-semibold"> Add New Rules: </h1>
+
+    <.simple_form for={@form} phx-submit="add_rule">
+        <div class="flex pb-3">
+            <button type="button" class="px-1" phx-click={show_modal("choose_tile_a")}>
+                <img src={@tileA} width="50" height="50">
+            </button>
             <select id="dir" name="dir" label="Direction">
-                <option value="0">Up</option>
-                <option value="1">Right</option>
-                <option value="2">Down</option>
-                <option value="3">Left</option>
+                <option value="0">can be above</option>
+                <option value="1">can be to the right of</option>
+                <option value="2">can be below</option>
+                <option value="3">can be to the left of</option>
             </select>
-            <label for="dir">from Tile B</label>
-            <.input field={@form[:tileB]} type="text" label="Tile B" required/>
+            <button type="button" class="px-1" phx-click={show_modal("choose_tile_b")}>
+                <img src={@tileB} width="50" height="50">
+            </button>
             <.button type="submit" phx-disable-with="Saving ...">Add Rule</.button>
-        </.simple_form>
+        </div>
+    </.simple_form>
+
+    <.modal id="choose_tile_a">
+        <div class="grid grid-cols-5">
+            <div :for={{dom_id, prob} <- @streams.probs} id={dom_id}>
+                <button phx-click={JS.push("save_tile_a")|>hide_modal("choose_tile_a")} type="submit" phx-disable-with="Saving ..." phx-value-tile={prob.id}>
+                    <label for="img"> <%= prob.id %></label>
+                    <img id="img" src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
+                </button>
+            </div>
+        </div>
+    </.modal>
+
+    <.modal id="choose_tile_b">
+        <div class="grid grid-cols-5">
+            <div :for={{dom_id, prob} <- @streams.probs} id={dom_id}>
+                <button phx-click={JS.push("save_tile_b")|>hide_modal("choose_tile_b")} type="submit" phx-disable-with="Saving ..." phx-value-tile={prob.id}>
+                    <label for="img"> <%= prob.id %></label>
+                    <img id="img" src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
+                </button>
+            </div>
+        </div>
     </.modal>
     
-    <div :for={{dom_id, n_rule} <- @streams.n_rules} id={dom_id}>
-        <h1>Rule <%= n_rule.id %> : <%= n_rule.rule.tileA %> is <%= n_rule.rule.dir %> from <%= n_rule.rule.tileB %> </h1>
+    <div class="flex py-1" :for={{dom_id, n_rule} <- @streams.n_rules} id={dom_id}>
+        <div class="w-80 border-2 border-black flex justify-between items-center">
+            <img src={"#{@project.images_path}#{n_rule.rule.tileA}"} width="52" height="52">
+            <h1><%= dir_to_phrase(n_rule.rule.dir) %></h1>
+            <img src={"#{@project.images_path}#{n_rule.rule.tileB}"} width="52" height="52">
+        </div>
+        <div class="px-1"></div>
         <.button phx-click="remove_rule" phx-value-id={n_rule.id}>
         Remove Rule
         </.button>
     </div>
 
     <div class="pt-4"></div>
+
+    <hr class="w-full h-px border-0 rounded my-4 bg-black">
 
     <.button phx-click={show_modal("delete_project")}> Delete Project </.button>
     <.modal id="delete_project">

@@ -26,8 +26,9 @@ defmodule WfcAppWeb.ProjectLive.Project do
     n_rules = project.new_rules
     |> Enum.reduce([], fn rule, acc ->
       [tA,dir,tB] = rule |> String.split
-
-      [%{id: length(acc),rule: %{tileA: tA, dir: dir_to_string(dir),tileB: tB}}|acc] end)
+      [%{id: length(acc),rule: %{tileA: tA, dir: dir_to_string(dir),tileB: tB}}|acc]
+    end)
+    |> Enum.sort()
 
     socket =
       socket
@@ -40,6 +41,8 @@ defmodule WfcAppWeb.ProjectLive.Project do
       |> stream(:images, stream)
       |> stream(:n_rules, n_rules)
       |> assign(:s_tiles, project.starting_tiles)
+      |> assign(tileA: "/images/default.png" )
+      |> assign(tileB: "/images/default.png" )
 
     project_user = Projects.get_correspondent_user(project.id)
     cond do
@@ -54,6 +57,11 @@ defmodule WfcAppWeb.ProjectLive.Project do
         {:ok, socket}
     end
 
+  end
+
+  def handle_params(params, _uri, socket) do
+    %{project: project} = socket.assigns
+    {:noreply, socket |> push_event("grid-size", %{cols: project.x})}
   end
 
   def dir_to_string(dir) do
@@ -129,19 +137,9 @@ defmodule WfcAppWeb.ProjectLive.Project do
   end
 
   @impl true
-  def handle_event("add_rule",params, socket) do
-    Projects.add_rule(socket.assigns.project.id,params["tileA"],params["dir"],params["tileB"])
-    socket =
-      socket
-      |> put_flash(:info, "Rule added successfully")
-      |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")
-    {:noreply, socket}
-  end
-
-  @impl true
   def handle_event("remove_rule", params, socket) do
     Projects.remove_rule(socket.assigns.project.id,String.to_integer(params["id"]))
-    {:noreply, socket |> put_flash(:info, "Rule removed successfully") |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}
+    {:noreply, socket |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}
   end
 
   @impl true
@@ -159,8 +157,46 @@ defmodule WfcAppWeb.ProjectLive.Project do
   end
 
   @impl true
-  def handle_event("delte_project", _params, socket) do
+  def handle_event("delete_project", _params, socket) do
     Projects.delete_project(socket.assigns.project.id)
     {:noreply, socket |> put_flash(:info, "Project deleted successfully!") |> redirect(to: ~p"/home")}
+  end
+
+  @impl true
+  def handle_event("save_tile_a", params, socket) do
+    %{project: project} = socket.assigns
+    {:noreply, socket |> assign(tileA: "#{project.images_path}#{params["tile"]}") |> push_patch(to: ~p"/project/#{project.id}")}
+  end
+
+  @impl true
+  def handle_event("save_tile_b", params, socket) do
+    %{project: project} = socket.assigns
+    {:noreply, socket |> assign(tileB: "#{project.images_path}#{params["tile"]}") |> push_patch(to: ~p"/project/#{project.id}") }
+  end
+
+  @impl true
+  def handle_event("add_rule", params, socket) do
+    %{project: project} = socket.assigns
+    tileA = Path.basename(socket.assigns.tileA)
+    tileB = Path.basename(socket.assigns.tileB)
+    socket = cond do
+      tileA != "default.png" and tileB != "default.png" ->
+        Projects.add_rule(project.id,tileA,params["dir"],tileB)
+        socket |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")
+      true ->
+        socket |> put_flash(:error, "Please select both tiles!")
+        |> push_patch(to: ~p"/project/#{project.id}")
+    end
+      {:noreply, socket}
+  end
+
+  def dir_to_phrase(dir) do
+    case dir do
+      "Up" -> "can be above"
+      "Right" -> "can be to the right of"
+      "Down" -> "can be below"
+      "Left" -> "can be to the left of"
+      _ -> :invalid_direction
+    end
   end
 end
