@@ -34,7 +34,7 @@ const tile_grid = document.querySelector('#tile_grid')
 window.addEventListener('phx:grid-size', e => {
     console.log("grid-size!", e.detail.cols)
     document.querySelector('#tile_grid')
-    .style['grid-template-columns'] = `repeat(${e.detail.cols}, minmax(0, 50px))`
+    .style['grid-template-columns'] = `repeat(${e.detail.cols}, minmax(50px, 50px))`
 })
 
 // connect if there are any LiveViews on the page

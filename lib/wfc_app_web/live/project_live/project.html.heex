@@ -21,8 +21,9 @@
             <.button type="submit" phx-disable-with="Saving ...">Generate Image</.button>
         </.simple_form>
     </.modal>
-    <img src={@tt} width="500" height="600"> 
+    <!--img src={@tt} width="500" height="600"--> 
 
+    <div class="flex flex-col overflow-x-auto">
     <div id="tile_grid" phx-update="stream" class="grid grid-cols-10 gap-s auto-rows-[50px]">
         <div :for={{dom_id, image} <- @streams.images} id={dom_id} class="bg-slate-500">
         <button phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={image.id}>
@@ -35,6 +36,7 @@
             <% end %>
         </button>
         </div>
+    </div>
     </div>
     
     <.modal id="choose_tile">
