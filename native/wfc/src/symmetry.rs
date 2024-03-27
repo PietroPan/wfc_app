@@ -62,6 +62,7 @@ impl Symmetry {
                 eprintln!("Invalid file name format: {}", tile_path);
             }
         } else {
+            println!("{}",tile_path);
             eprintln!("Error opening image.");
         }
     }

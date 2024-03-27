@@ -23,6 +23,6 @@ defmodule WfcApp.Projects.Project do
   def changeset(project, attrs) do
     project
     |> cast(attrs, [:images_path, :jason_path, :name, :x, :y, :wave, :user_id, :probabilities, :starting_tiles])
-    |> validate_required([:images_path, :jason_path, :name, :x, :y, :wave, :user_id])
+    |> validate_required([:images_path, :jason_path, :name, :user_id])
   end
 end

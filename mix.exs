@@ -51,7 +51,8 @@ defmodule WfcApp.MixProject do
       {:gettext, "~> 0.20"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:rustler, "~> 0.30.0"}
+      {:rustler, "~> 0.30.0"},
+      {:calendar, "~> 1.0.0"}
     ]
   end
 

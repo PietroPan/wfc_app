@@ -67,4 +67,9 @@ defmodule WfcApp.Projects do
     Ecto.Changeset.change(project, new_rules: n_rules)
     |> Repo.update()
   end
+
+  def delete_project(project_id) do
+    get_project!(project_id)
+    |> Repo.delete()
+  end
 end

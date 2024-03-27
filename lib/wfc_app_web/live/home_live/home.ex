@@ -4,6 +4,7 @@ defmodule WfcAppWeb.HomeLive.Home do
 
   alias WfcApp.Projects
   alias WfcApp.Projects.Project
+  alias WfcApp.Rust
 
   @impl true
   def mount(_params, _session, socket) do
@@ -21,7 +22,7 @@ defmodule WfcAppWeb.HomeLive.Home do
       |> allow_upload(:rule_set, accept: ~w(.json), max_entries: 1)
       |> stream(:projects, Projects.list_projects(user.id))
 
-    Logger.debug("PROJECTSSSSSS: #{inspect(Projects.list_projects(user.id))}")
+    #Logger.debug("PROJECTSSSSSS: #{inspect(Projects.list_projects(user.id))}")
 
     {:ok, socket}
   end
@@ -53,16 +54,18 @@ defmodule WfcAppWeb.HomeLive.Home do
           |> Map.put("images_path", full_images_path)
           |> Projects.save()
           |> case do
-            {:ok, _project} ->
+            {:ok, project} ->
+              image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{10,10},"priv/static/images/","final#{project.id}",%{},%{},[])
+              Projects.update_wave(project.id,image_list,10,10)
               socket =
                 socket
                 |> put_flash(:info, "Project created successfully!")
-                |> push_navigate(to: ~p"/home")
+                |> redirect(to: ~p"/project/#{project.id}")
 
               {:noreply, socket}
 
             {:error, _changeset} ->
-              {:noreply, socket}
+              {:noreply, socket |> put_flash(:error, "Something went wrong!")}
             end
 
       {:error, error} ->
