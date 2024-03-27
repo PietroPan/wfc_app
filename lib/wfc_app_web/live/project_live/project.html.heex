@@ -23,7 +23,7 @@
     </.modal>
     <!--img src={@tt} width="500" height="600"--> 
 
-    <div class="flex flex-col overflow-x-auto">
+    <div class="py-3 flex flex-col overflow-x-auto">
     <div id="tile_grid" phx-update="stream" class="grid grid-cols-10 gap-s auto-rows-[50px]">
         <div :for={{dom_id, image} <- @streams.images} id={dom_id} class="bg-slate-500">
         <button phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={image.id}>
@@ -51,7 +51,10 @@
         <.button phx-click="clear_s_tile"> Unlock Tile </.button>
     </.modal>
     <.button phx-click="clear_s_tiles"> Clear Locked Tiles </.button>
-
+    <a href={@tt} download>
+        <.button> Download Image </.button>
+    </a>
+    <div class="pt-5"></div>
     <.button phx-click={show_modal("new_rule")}> Add New Rule </.button>
     <.modal id ="new_rule">
         <.simple_form for={@form} phx-submit="add_rule">
