@@ -157,4 +157,10 @@ defmodule WfcAppWeb.ProjectLive.Project do
     Projects.update_starting_tiles(project.id,Map.drop(project.starting_tiles,[socket.assigns.pos]))
     {:noreply, socket |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")}
   end
+
+  @impl true
+  def handle_event("delte_project", _params, socket) do
+    Projects.delete_project(socket.assigns.project.id)
+    {:noreply, socket |> put_flash(:info, "Project deleted successfully!") |> redirect(to: ~p"/home")}
+  end
 end

@@ -1,6 +1,10 @@
 <div id="grid">
-    <h1 class="text-2x1">Project: <%=@project.name%></h1>
-    <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("generate-image-modal")}>Generate Image</.button>
+    <div class="flex flex-col items-center">
+    <h1 class="text-xl font-semibold py-6">Project: <%=@project.name%></h1>
+    </div>
+    <hr class="w-full h-px py-1 border-0 rounded my-4 bg-black">
+    <div class="pt-4"></div>
+    <.button type="button" class="hover:bg-white  hover:text-black hover:border-black hover:border" phx-click={show_modal("generate-image-modal")}>Generate Image</.button>
     <.modal id="generate-image-modal">
         <.simple_form for={@form} phx-submit="generate_image">
             <.button type="submit" phx-disable-with="Saving ...">Generate Image</.button>
@@ -63,10 +67,23 @@
         </.simple_form>
     </.modal>
     
-        <div :for={{dom_id, n_rule} <- @streams.n_rules} id={dom_id}>
-            <h1>Rule <%= n_rule.id %> : <%= n_rule.rule.tileA %> is <%= n_rule.rule.dir %> from <%= n_rule.rule.tileB %> </h1>
-            <.button phx-click="remove_rule" phx-value-id={n_rule.id}>
-            Remove Rule
-            </.button>
+    <div :for={{dom_id, n_rule} <- @streams.n_rules} id={dom_id}>
+        <h1>Rule <%= n_rule.id %> : <%= n_rule.rule.tileA %> is <%= n_rule.rule.dir %> from <%= n_rule.rule.tileB %> </h1>
+        <.button phx-click="remove_rule" phx-value-id={n_rule.id}>
+        Remove Rule
+        </.button>
+    </div>
+
+    <div class="pt-4"></div>
+
+    <.button phx-click={show_modal("delete_project")}> Delete Project </.button>
+    <.modal id="delete_project">
+        <div class="pb-4 flex flex-col items-center">
+            <h1>Are you sure you wan't to delete this project?</h1>
         </div>
+            <div class="flex justify-evenly">
+                <.button phx-click="delte_project"> Yes </.button>
+                <.button phx-click={hide_modal("delete_project")}> No </.button>
+            </div>
+    </.modal>
 </div>

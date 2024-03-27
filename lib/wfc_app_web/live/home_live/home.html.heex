@@ -1,7 +1,7 @@
 <div class="flex flex-col items-center">
     <h1 class="text-xl font-semibold py-6">Your Projects</h1>
 </div>
-    <hr class="w-full h-px py-1 border-0 rounded my-4 bg-black">
+<hr class="w-full h-px py-1 border-0 rounded my-4 bg-black">
 <div id="feed" phx-update="stream" class="pt-5 grid grid-cols-5 gap-5 justify-between">
     <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("new-project-modal")}>Create Project</.button>
     <.modal id="new-project-modal">
