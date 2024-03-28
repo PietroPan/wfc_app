@@ -37,7 +37,7 @@
     </.button>
 
     <div class="py-3 flex flex-col overflow-x-auto">
-    <div id="tile_grid" phx-update="stream" class="w-min border-2 border-black grid grid-cols-10 gap-s auto-rows-[50px]">
+    <div id="tile_grid" phx-update="stream" class="w-min border-2 border-black grid grid-cols-10 gap-px auto-rows-[50px]">
         <div :for={{dom_id, image} <- @streams.images} id={dom_id} class="bg-slate-500">
         <button class="border-red-500 hover:border-2" phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={image.id}>
             <%= if Map.has_key?(@project.starting_tiles,Integer.to_string(image.id)) do %>
