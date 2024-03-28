@@ -166,7 +166,13 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
   @impl true
   def handle_event("delete_project", _params, socket) do
-    Projects.delete_project(socket.assigns.project.id)
+    %{project: project} = socket.assigns
+    upload_path = Path.split(project.images_path)|> Enum.reverse() |> tl() |> Enum.reverse() |> Path.join()
+    Projects.delete_project(project.id)
+    File.rm!("priv/static#{project.jason_path}")
+    File.rm_rf!("priv/static#{project.images_path}")
+    File.rmdir!("priv/static#{upload_path}")
+    File.rm!("priv/static#{upload_path |> String.slice(0..String.length(upload_path)-4)}")
     {:noreply, socket |> put_flash(:info, "Project deleted successfully!") |> redirect(to: ~p"/home")}
   end
 
