@@ -41,8 +41,8 @@ defmodule WfcAppWeb.ProjectLive.Project do
       |> stream(:images, stream)
       |> stream(:n_rules, n_rules)
       |> assign(:s_tiles, project.starting_tiles)
-      |> assign(tileA: "/images/default.png" )
-      |> assign(tileB: "/images/default.png" )
+      |> assign(tileA: "/images/grid.png" )
+      |> assign(tileB: "/images/grid.png" )
 
     project_user = Projects.get_correspondent_user(project.id)
     cond do
@@ -57,6 +57,14 @@ defmodule WfcAppWeb.ProjectLive.Project do
         {:ok, socket}
     end
 
+  end
+
+  def default_image({x,y}) do
+    List.duplicate("/images/grid.png", x*y)
+    |> Enum.reduce([], fn tile, acc ->
+      [%{id: length(acc),tile: tile}|acc]
+    end)
+    |> Enum.sort()
   end
 
   def handle_params(params, _uri, socket) do
@@ -198,5 +206,27 @@ defmodule WfcAppWeb.ProjectLive.Project do
       "Left" -> "can be to the left of"
       _ -> :invalid_direction
     end
+  end
+
+  @impl true
+  def handle_event("clear_grid", _params, socket) do
+    %{project: project} = socket.assigns
+    socket =
+      socket |> stream(:images, default_image({project.x,project.y}), reset: true)
+             |> push_patch(to: ~p"/project/#{project.id}")
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("clear_probs", _params, socket) do
+    %{project: project} = socket.assigns
+    {n_prob_map,n_prob_list}=create_prob_map("priv/static#{project.images_path}", %{})
+    Projects.update_probabilities(project.id,n_prob_map)
+    socket =
+      socket |> stream(:probs, n_prob_list, reset: true)
+             |> assign(probs: n_prob_map)
+             |> push_patch(to: ~p"/project/#{project.id}")
+    {:noreply, socket}
   end
 end

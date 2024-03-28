@@ -13,6 +13,9 @@
                 <.input field={@form[:y]} type="text" label="Y" value={@project.y} required/>
             </div>
             <h1 class="font-bold"> Change Tile Probabilities: </h1>
+            <.button type="button" phx-click="clear_probs">
+                Reset Probabilities
+            </.button>
             <div :for={{dom_id, prob} <- @streams.probs} id={dom_id}>
                 <h1> <%= prob.id %> </h1>
                 <img src={"#{@project.images_path}#{prob.id}"} width="50" height="50">
@@ -29,10 +32,14 @@
     </.modal>
     <!--img src={@tt} width="500" height="600"--> 
 
+    <.button phx-click="clear_grid">
+        Clear Grid
+    </.button>
+
     <div class="py-3 flex flex-col overflow-x-auto">
-    <div id="tile_grid" phx-update="stream" class="grid grid-cols-10 gap-s auto-rows-[50px]">
+    <div id="tile_grid" phx-update="stream" class="w-min border-2 border-black grid grid-cols-10 gap-s auto-rows-[50px]">
         <div :for={{dom_id, image} <- @streams.images} id={dom_id} class="bg-slate-500">
-        <button phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={image.id}>
+        <button class="border-red-500 hover:border-2" phx-click={JS.push("save_pos")|>show_modal("choose_tile")} phx-value-pos={image.id}>
             <%= if Map.has_key?(@project.starting_tiles,Integer.to_string(image.id)) do %>
                 <div class="border-4">
                     <img src={@project.starting_tiles[Integer.to_string(image.id)]} width="50" height="50">
@@ -68,8 +75,8 @@
 
     <.simple_form for={@form} phx-submit="add_rule">
         <div class="flex pb-3">
-            <button type="button" class="px-1" phx-click={show_modal("choose_tile_a")}>
-                <img src={@tileA} width="50" height="50">
+            <button type="button" class="px-1 hover:drop-shadow-lg" phx-click={show_modal("choose_tile_a")}>
+                <img  src={@tileA} width="50" height="50">
             </button>
             <select id="dir" name="dir" label="Direction">
                 <option value="0">can be above</option>
@@ -77,7 +84,7 @@
                 <option value="2">can be below</option>
                 <option value="3">can be to the left of</option>
             </select>
-            <button type="button" class="px-1" phx-click={show_modal("choose_tile_b")}>
+            <button type="button" class="px-1 hover:drop-shadow-lg" phx-click={show_modal("choose_tile_b")}>
                 <img src={@tileB} width="50" height="50">
             </button>
             <.button type="submit" phx-disable-with="Saving ...">Add Rule</.button>
