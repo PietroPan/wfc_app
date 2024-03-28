@@ -4,7 +4,7 @@
     </div>
     <hr class="w-full h-px py-1 border-0 rounded my-4 bg-black">
     <div class="pt-4"></div>
-    <.button type="button" class="hover:bg-white  hover:text-black hover:border-black hover:border" phx-click={show_modal("generate-image-modal")}>Generate Image</.button>
+    <.button type="button" phx-click={show_modal("generate-image-modal")}>Generate Image</.button>
     <.modal id="generate-image-modal">
         <.simple_form for={@form} phx-submit="generate_image">
             <.button type="submit" phx-disable-with="Saving ...">Generate Image</.button>
@@ -35,6 +35,17 @@
     <.button phx-click="clear_grid">
         Clear Grid
     </.button>
+
+    <.button type="button" phx-click={show_modal("update_rule_set")}>
+        Update Rule Set
+    </.button>
+
+    <.modal id="update_rule_set">
+        <.simple_form for={@form} phx-change="validate" phx-submit="update_rule_set">
+            <.live_file_input upload={@uploads.n_rule_set} required/>
+            <.button type="submit" phx-disable-with="Saving..."> Update Rule Set </.button>
+        </.simple_form>
+    </.modal>
 
     <div class="py-3 flex flex-col overflow-x-auto">
     <div id="tile_grid" phx-update="stream" class="w-min border-2 border-black grid grid-cols-10 gap-px auto-rows-[50px]">

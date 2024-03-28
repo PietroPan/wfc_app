@@ -43,6 +43,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
       |> assign(:s_tiles, project.starting_tiles)
       |> assign(tileA: "/images/grid.png" )
       |> assign(tileB: "/images/grid.png" )
+      |> allow_upload(:n_rule_set, accept: ~w(.json), max_entries: 1)
 
     project_user = Projects.get_correspondent_user(project.id)
     cond do
@@ -67,7 +68,8 @@ defmodule WfcAppWeb.ProjectLive.Project do
     |> Enum.sort()
   end
 
-  def handle_params(params, _uri, socket) do
+  @impl true
+  def handle_params(_params, _uri, socket) do
     %{project: project} = socket.assigns
     {:noreply, socket |> push_event("grid-size", %{cols: project.x})}
   end
@@ -234,5 +236,29 @@ defmodule WfcAppWeb.ProjectLive.Project do
              |> assign(probs: n_prob_map)
              |> push_patch(to: ~p"/project/#{project.id}")
     {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("validate", _params, socket) do
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("update_rule_set",_params,socket) do
+    %{project: project} = socket.assigns
+
+    n_jason_path =List.first(consume_files(socket,:n_rule_set))
+    File.rm!("priv/static#{project.jason_path}")
+    Projects.update_rule_set(project.id, n_jason_path)
+    {:noreply, socket |> put_flash(:info, "Rule Set updated successfully!") |> push_navigate(to: ~p"/project/#{project.id}")}
+  end
+
+  def consume_files(socket,content) do
+    consume_uploaded_entries(socket, content, fn %{path: path}, _entry ->
+      dest = Path.join([:code.priv_dir(:wfc_app), "static", "uploads", Path.basename(path)])
+      File.cp!(path,dest)
+
+      {:postpone, ~p"/uploads/#{Path.basename(dest)}"}
+    end)
   end
 end

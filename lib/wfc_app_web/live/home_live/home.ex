@@ -74,7 +74,7 @@ defmodule WfcAppWeb.HomeLive.Home do
     end
   end
 
-  defp consume_files(socket,content) do
+  def consume_files(socket,content) do
     consume_uploaded_entries(socket, content, fn %{path: path}, _entry ->
       dest = Path.join([:code.priv_dir(:wfc_app), "static", "uploads", Path.basename(path)])
       File.cp!(path,dest)

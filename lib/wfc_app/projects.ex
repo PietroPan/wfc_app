@@ -72,4 +72,10 @@ defmodule WfcApp.Projects do
     get_project!(project_id)
     |> Repo.delete()
   end
+
+  def update_rule_set(project_id, jason_path) do
+    get_project!(project_id)
+    |> Ecto.Changeset.change(jason_path: jason_path)
+    |> Repo.update()
+  end
 end
