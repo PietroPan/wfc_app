@@ -6,12 +6,13 @@ use std::fs::File;
 
 #[derive(Debug)]
 pub struct TileSet {
-    pub tiles: Vec<String>,
-    pub tiles_path: String,
-    pub size: u32
+    pub tiles: Vec<String>, // List of tiles
+    pub tiles_path: String, // Path to the folder with those tiles
+    pub size: u32 // Number of tiles in the list
 }
 
 impl TileSet {
+    // Given a path to a directory with tiles creates a tile set with all images inside that folder
     pub fn new(tiles_path: &str) -> TileSet {
         let tiles:Vec<String> = fs::read_dir(tiles_path).unwrap()
             .map(|x| x.unwrap().file_name().into_string().unwrap())
@@ -25,6 +26,7 @@ impl TileSet {
         }
     }
 
+    // Given a rule set creates a tile set with all of the tiles and tile path listed in that rule set
     pub fn new_r(rule_set: &RuleSet) -> TileSet {
         let tiles:Vec<String> = rule_set.adjacency_rules.keys().cloned().collect();
         TileSet {
@@ -34,6 +36,8 @@ impl TileSet {
         }
     }
 
+    // Looks at all of the tiles in a rule set and creates new tiles from them given their symmetry and a symmetry dictionary
+    // Returns a new Adjacency rule for every new tile created
     pub fn expand(symmetry_dictionary: &HashMap<String, Symmetry>, rule_set:&mut RuleSet) -> HashMap<String, AdjacencyRule> {
 
         let mut new_rules = HashMap::new();
@@ -106,14 +110,15 @@ impl TileSet {
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct AdjacencyRule {
-    pub symmetry: String,
-    pub up_tiles: Vec<String>,
-    pub right_tiles: Vec<String>,
-    pub down_tiles: Vec<String>,
-    pub left_tiles: Vec<String>
+    pub symmetry: String, // Symmetry of Tile
+    pub up_tiles: Vec<String>, // Possible tiles up from that tile
+    pub right_tiles: Vec<String>, // Possible tiles right from that tile
+    pub down_tiles: Vec<String>, // Possible tiles down from that tile
+    pub left_tiles: Vec<String> // Possible tiles left from that tile
 }
 
 impl AdjacencyRule{
+    // Creates a adjacency rule given all of the fields
     pub fn new(symmetry: String, up_tiles: Vec<String>, right_tiles: Vec<String>, down_tiles: Vec<String>, left_tiles: Vec<String>,) -> AdjacencyRule {
         AdjacencyRule {
             symmetry: symmetry,
@@ -124,6 +129,7 @@ impl AdjacencyRule{
         }
     }
 
+    // Creates a empty adjacency rule
     pub fn new_empty(symmetry: String) -> AdjacencyRule {
         AdjacencyRule {
             symmetry: symmetry,
@@ -134,6 +140,7 @@ impl AdjacencyRule{
         }
     }
 
+    // Creates a simple adjacency rule with a single value 
     pub fn new_rule(symmetry: String,dir: u32, tile: String) -> AdjacencyRule {
         let mut up_tiles = Vec::new();
         let mut right_tiles = Vec::new();
@@ -158,11 +165,12 @@ impl AdjacencyRule{
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct RuleSet {
-    pub tiles_path: String,
-    pub adjacency_rules: HashMap<String, AdjacencyRule>
+    pub tiles_path: String, // Path to the directory with the tiles
+    pub adjacency_rules: HashMap<String, AdjacencyRule> // Map that assigns adjacency rules to every tile
 }
 
 impl RuleSet {
+    // Creates a new rule set given a json file
     pub fn new(rules_json: &str) -> Result<RuleSet, std::io::Error> {
         let rule_set = {
             let file_path = fs::read_to_string(&rules_json)?;
@@ -171,6 +179,7 @@ impl RuleSet {
     Ok(rule_set)
     }
 
+    // Creates a new rule set given a json file and a path to the tiles directory
     pub fn new2(rules_json: &str, tiles_path: String) -> Result<RuleSet, std::io::Error> {
         let rule_set = {
             let file_path = fs::read_to_string(&rules_json)?;
@@ -180,6 +189,7 @@ impl RuleSet {
     Ok(RuleSet{adjacency_rules, tiles_path})
     }
 
+    // Transforms a RuleSet structure into a json file
     pub fn to_json(&self, new_json: &str) {
         let file = File::options().write(true).create(true).open(new_json).expect("Unable to open file");
         serde_json::to_writer(file, &self).unwrap();
@@ -187,11 +197,14 @@ impl RuleSet {
         //fs::write(new_json, ruleset).expect("Unable to write");
     }
 
+    // Adds a adjacency rule and it's symmetric counter part to the rule set
+    // The symmetries of the tiles are required in case the tile is not yet in the rule set
     pub fn add_rule(&mut self, sym1: String, tile1: String,direction: u32, sym2:String, tile2: String){
         self.add_rule_aux(sym1, tile1.clone(), direction, tile2.clone());
         self.add_rule_aux(sym2, tile2, (direction+2)%4, tile1);
     }
 
+    // Adds a adjacency rule to the rule set 
     pub fn add_rule_aux(&mut self, symmetry: String, tile1: String,direction: u32, tile2: String){
         if self.adjacency_rules.contains_key(&tile1){
             if let Some(rule) = self.adjacency_rules.get_mut(&tile1){
@@ -209,6 +222,7 @@ impl RuleSet {
         }
     }
 
+    // For every adjacency rule in a rule set adds it's symmetry counter part to the rule set
     pub fn ini_expand(&mut self){
         for (tile1, rules) in &self.adjacency_rules.clone() {
             for tile2 in &rules.up_tiles{
@@ -226,12 +240,17 @@ impl RuleSet {
         }
     }
 
+    // 
     pub fn expand(&mut self, symmetry_dictionary: &HashMap<String, Symmetry>, new_rules: &HashMap<String, AdjacencyRule>) -> RuleSet{
         //let mut n_adjancecy_rules = HashMap::new();
         let old_rules = self.clone();
+
+        //Add new rules to the rule set
         for (tile, rule) in new_rules{
             let _ = &self.adjacency_rules.insert(tile.clone(), rule.clone());
         }
+
+        // Transform every rule in a rule set depending on the symmetry of the tiles involved
         for (tile, rules) in &old_rules.adjacency_rules {
             let mut n_up_tiles = Vec::new();
             let mut n_left_tiles = Vec::new();
@@ -726,6 +745,7 @@ impl RuleSet {
         return self.clone();
     }
 
+    // Given a tile path and a number creates a new tile name (ex: tile.png with number 3 gives tile-3.png)
     pub fn nnew_tile_name(old_tile: &String,n: u32) -> String {
         if n != 0 {
             if let Some(dot_index) = old_tile.rfind('.'){
@@ -739,10 +759,12 @@ impl RuleSet {
         }
     }
 
+    // Given a tile path its symmetry and a transformation n, creates a new tile name
     pub fn new_tile_name(old_tile: &String,n: u32, symmetry: &str) -> String {
         if n!=0 {
             match symmetry {
                 a if (a=="B" || a=="T" || a=="L" || a=="Q") => {
+                    // if tile was already transformed calculate new n
                     if let Some(n_index) = old_tile.rfind('-'){
                         let old_n = old_tile.chars().nth(n_index+1).expect("Error char not found").to_digit(10).expect("Can't convert to number");
                         let new_n = (old_n+n)%4;
@@ -762,6 +784,7 @@ impl RuleSet {
                     }
                 },
                 a if (a=="I" || a=="/") => {
+                    // if tile was already transformed calculate new n
                     if let Some(n_index) = old_tile.rfind('-'){
                         let old_n = old_tile.chars().nth(n_index+1).expect("Error char not found").to_digit(10).expect("Can't convert to number");
                         let new_n = (old_n+n)%2;

@@ -8,11 +8,12 @@ use rand::seq::SliceRandom;
 
 #[derive(Debug)]
 pub struct Wave<'a> {
-    pub size: (i32, i32),
-    pub regions: BTreeMap<(i32, i32), Region<'a>>
+    pub size: (i32, i32), // Size of the wave
+    pub regions: BTreeMap<(i32, i32), Region<'a>> //Map that for every position of the wave gives a region (like a matrix)
 }
 
 impl Wave<'_> {
+    // Creates a new wave given a tile set, size of wave and list of probabilities associated with each tile
     pub fn new(tile_set: &TileSet, size: (i32, i32), probabilities: HashMap<String, u32>) -> Wave {
         let (x,y) = size;
         let region = Region::new(tile_set,probabilities);
@@ -25,6 +26,7 @@ impl Wave<'_> {
         Wave { size, regions }
     }
 
+    // List all of the tiles in a fully collapsed wave
     pub fn list_tiles(&self) -> String {
         let mut result = "".to_string();
         let (x,y) = self.size;
@@ -39,7 +41,9 @@ impl Wave<'_> {
         return result;
     }
 
+    // Collapses a wave
     pub fn collapse(&mut self, tile_set_size: u32) -> (i32, i32) {
+        // Get the lowest entropy region if it doesn't exist than there is no more regions to collapse
         let (x,y) = self.lowest_entropy(tile_set_size);
         if (x,y) != (-1,-1) {
             let region: &mut Region<'_> = self.regions.get_mut(&(x,y)).unwrap();
@@ -48,6 +52,7 @@ impl Wave<'_> {
         return (x,y);
     }
 
+    // Forces a region to collapse into a specific tile
     pub fn set_pos(&mut self,(x,y): (i32,i32),tile: String, rule_set: &RuleSet) {
         if self.regions.contains_key(&(x,y)) {
             let region: &mut Region<'_> = self.regions.get_mut(&(x,y)).unwrap();
@@ -58,11 +63,13 @@ impl Wave<'_> {
         }
     }
 
+    // Collapses a wave until there is no more regions to collapse
     pub fn loop_propagate(&mut self, tile_set_size: u32, rule_set: &RuleSet, _results_path: Option<&String>) {
         /*match results_path {
             Some(path) => render::render_wave(&self,format!("{}it0.png",path),&rule_set.tiles_path),
             None => ()
         }*/
+        // Collapse a region
         let mut pos = self.collapse(tile_set_size);
         //let mut it = 1;
         while pos!=(-1,-1) {
@@ -72,12 +79,14 @@ impl Wave<'_> {
             }*/
 
             //render::render_wave(&self,format!("results3/it{}.png",it));
+            // Propagate effects of region collapse
             self.start_propagate(pos,rule_set);
             pos = self.collapse(tile_set_size);
             //it+=1;
         }
     }
 
+    // Gets the lowest entropy region (gets a random region from the regions with the least amount of possible tile)
     pub fn lowest_entropy(&self, tile_set_size: u32) -> (i32, i32) {
         let mut lowest = tile_set_size+1;
         let mut all_pos = Vec::new();
@@ -103,12 +112,14 @@ impl Wave<'_> {
         return pos;
     }
 
+    // Propagate the effect of collapsing a region
     pub fn start_propagate(&mut self, i_pos: (i32,i32), rule_set: &RuleSet) {
         let mut pos_v = Vec::new();
         let (fx,fy) = self.size;
         pos_v.push(i_pos);
         while pos_v.len()>0 {
             let mut new_pos_v = Vec::new();
+            // Checks all of the adjacent positions to the position being propagated and update them with if they are a legal position than update them and if the update changed them add them to the list of positions being propagated
             for (x,y) in &pos_v {
                 let vecs = self.regions.get(&(*x,*y)).unwrap().get_dir_vectors(rule_set);
                 if *x>0 {
@@ -136,11 +147,12 @@ impl Wave<'_> {
 
 #[derive(Debug,Clone)]
 pub struct Region<'a> {
-    pub superposition: HashMap<&'a String, u32>,
-    pub entropy: u32
+    pub superposition: HashMap<&'a String, u32>, //Map of possible tiles the region can be in and their probabilities
+    pub entropy: u32 //Number of tiles in the the region can be
 }
 
 impl Region<'_> {
+    // Creates a new region
     pub fn new(tile_set: &TileSet, probabilities: HashMap<String, u32>) -> Region {
         let mut superposition = HashMap::new();
         let entropy = tile_set.size;
@@ -158,10 +170,12 @@ impl Region<'_> {
         }
     }
 
+    // Gets the first tile in a region superposition (Suppose to be used when region was collapsed and there is only one tile in the superposition)
     pub fn get_tile(&self) -> String {
         return self.superposition.keys().next().unwrap().to_string();
     }
 
+    // Forces a region to collapse into a specific tile
     pub fn set_tile(&mut self, tile: String) {
         let mut newsp = HashMap::new();
         let (k,v) = self.superposition.iter_mut().find(|(&k,_v)| *k == tile).unwrap();
@@ -170,6 +184,7 @@ impl Region<'_> {
         self.entropy = 1;
     }
 
+    // Collapses a region choosing a tile randomly given the probabilities of possible tile outcomes
     pub fn collapse(&mut self){
         //let mut rng = rand::thread_rng();
         let mut newsp = HashMap::new();
@@ -180,6 +195,8 @@ impl Region<'_> {
         self.entropy = 1;
     }
 
+    // Given all of the possible tile outcomes and their probabilities create a probability function and returns a random tile in that function
+    // Ex: (If tileA has double the normal probability than the probability function will look like ((0,100) => tileA, (100,300) => tileB, (300,400) => tileC)) than a random number between 0 and 400 is picked and the corresponding tile is picked 
     pub fn probability_func(superposition: HashMap<&String, u32>) -> String{
         let mut min;
         let mut max = 0;
@@ -204,6 +221,7 @@ impl Region<'_> {
         return rk;
     }
     
+    // Gets the possible tiles in the regions adjacent to this region
     pub fn get_dir_vectors(&self, rule_set: &RuleSet) -> Vec<Vec<String>>{
         let mut left = Vec::new();
         let mut up = Vec::new();
@@ -225,6 +243,7 @@ impl Region<'_> {
         return res;
     }
 
+    // Updates a region with new possible tile outcomes, returns true if updates changed region superposition
     pub fn update(&mut self, updates: Vec<String>) -> bool {
         self.superposition = self.superposition.iter().filter(|(k,_v)| updates.contains(k)).map(|(k,v)| (*k,*v)).collect();
         let new_len = self.superposition.len() as u32;

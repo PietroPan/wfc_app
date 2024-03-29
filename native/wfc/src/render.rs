@@ -1,9 +1,11 @@
 use image::{DynamicImage, GenericImageView, Rgba, GenericImage, Pixel};
 use crate::wave::{Wave,Region};
 
+// Given a wave return the corresponding image
 pub fn render_wave(wave: &Wave, output_path: String,tile_set_path: &String){
     let (x,y) = wave.size;
     let mut strips = Vec::new();
+    // Joins all of the images in a row of the wave vertically then joins all of those images horizontally giving the final result
     for i in 0..x {
         let mut strip = Vec::new();
         for j in 0..y {
@@ -14,10 +16,12 @@ pub fn render_wave(wave: &Wave, output_path: String,tile_set_path: &String){
     join_images(strips, output_path);
 }
 
+// Given a region return the corresponding image
 pub fn render_region(region: &Region,tile_set_path: &String) -> DynamicImage {
     blend_images(region.superposition.keys().map(|k| format!("{}{}",tile_set_path,k)).collect())
 }
 
+// Joins all of the given images vertically
 pub fn join_images_vertically(images: Vec<DynamicImage>) -> DynamicImage {
     // Find the total width of all images
     let total_height: u32 = images.iter().map(|img| img.height()).sum();
@@ -44,7 +48,7 @@ pub fn join_images_vertically(images: Vec<DynamicImage>) -> DynamicImage {
     result
 }
 
-
+// Joins all of the images given horizontally
 pub fn join_images(images: Vec<DynamicImage>, output_path: String) {
 
     // Join images vertically
@@ -67,6 +71,7 @@ pub fn join_images(images: Vec<DynamicImage>, output_path: String) {
     result.save(output_path).unwrap();
 }
 
+// If a region has multiple possible tile outcomes than those tiles are blended together into one tile
 pub fn blend_images(images: Vec<String>) -> DynamicImage {
     // Load all images and store them in a vector
     let mut images_vec: Vec<DynamicImage> = Vec::new();
@@ -111,6 +116,7 @@ pub fn blend_images(images: Vec<String>) -> DynamicImage {
     result
 }
 
+// Blend two pixels together given their weight
 fn blend_pixels(pixel1: Rgba<u8>, pixel2: Rgba<u8>, weight: f32) -> Rgba<u8> {
     let r = ((pixel1[0] as f32 * (1.0 - weight)) + (pixel2[0] as f32 * weight)) as u8;
     let g = ((pixel1[1] as f32 * (1.0 - weight)) + (pixel2[1] as f32 * weight)) as u8;

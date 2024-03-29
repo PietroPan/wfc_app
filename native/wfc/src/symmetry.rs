@@ -6,11 +6,13 @@ use crate::tile_set::AdjacencyRule;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Symmetry {
-    pub eq: Vec<u32>,
-    pub sym: Vec<String>
+    //The index of the these vector represent a transformation Ex: eq[0] is none, sym[3] is rotate270 etc 
+    pub eq: Vec<u32>, //For every transformation indicates what is the new tile that tile transforms into ex if eq[3] == eq[7] than applying transformation 3 or 7 results in the same tile
+    pub sym: Vec<String> //For every transformation indicates what is the new symmetry that tile transforms into ex if sym[3] == sym[7] than applying transformation 3 or 7 results in the same symmetry
 }
 
 impl Symmetry {
+    // Create a symmetry dictionary given a jason file
     pub fn symmetry_dictionary(symmetry_json: &str) -> Result<HashMap<String, Symmetry>, std::io::Error> {
         let symmetry_dictionary = {
             let file_path = fs::read_to_string(&symmetry_json)?;
@@ -19,6 +21,7 @@ impl Symmetry {
     Ok(symmetry_dictionary)
     }
 
+    // Given a tile depending on the symmetry type create new transformations of that tile
     pub fn apply_transformations(tile_path: &String, _tile: &String, rule: &AdjacencyRule, symmetry_dictionary: &HashMap<String, Symmetry>, _new_rules: &mut HashMap<String,AdjacencyRule>){
         
         dbg!(&rule.symmetry);
@@ -39,6 +42,7 @@ impl Symmetry {
         //Self::transform(tile_path,4);
     }
 
+    // Transform a tile into one of the 7 transformations
     pub fn transform(tile_path: &String, transformation: u32){
         if let Ok(image) = image::open(tile_path) {
             let transformed_image = match transformation {
