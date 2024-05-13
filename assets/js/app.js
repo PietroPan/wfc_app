@@ -37,6 +37,10 @@ window.addEventListener('phx:grid-size', e => {
     .style['grid-template-columns'] = `repeat(${e.detail.cols}, minmax(50px, 50px))`
 })
 
+window.addEventListener('phx:debug', e =>{
+    console.log("DEBUG: ", e.detail.msg)
+})
+
 // connect if there are any LiveViews on the page
 liveSocket.connect()
 

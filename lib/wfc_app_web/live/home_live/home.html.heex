@@ -2,7 +2,7 @@
     <h1 class="text-xl font-semibold py-6">Your Projects</h1>
 </div>
 <hr class="w-full h-px py-1 border-0 rounded my-4 bg-black">
-<div id="feed" phx-update="stream" class="pt-5 grid grid-cols-5 gap-5 justify-between">
+<div id="feed" phx-update="stream" class="pt-5 grid grid-cols-5 gap-5 justify-between overflow-hidden">
     <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("new-project-modal")}>Create Project</.button>
     <.modal id="new-project-modal">
         <.simple_form for={@form} phx-change="validate" phx-submit="save-post">
@@ -15,9 +15,9 @@
         </.simple_form>
     </.modal>
     <.link navigate={~p"/project/#{project}"} :for={{dom_id, project} <- @streams.projects} id={dom_id} 
-        class="flex h-full flex-col rounded border border-black hover:bg-black hover:text-white">
+        class="flex h-full flex-col rounded border border-black hover:bg-black hover:text-white ">
         <p class="font-semibold px-2"> <%= project.name %> </p>
-        <img src={"/images/final#{project.id}.png"}>
+        <img src={"/images/final#{project.id}.png"} class="object-none h-72 w-72">
         <p class="text-xs px-2">Created at: <%= WfcApp.handle_date(project.inserted_at) %> </p>
     </.link>
 

@@ -18,3 +18,10 @@ config :logger, level: :info
 
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
+
+
+
+config :wfc_app, WfcApp.Rust,
+  crate: :wfc,
+  skip_compilation?: true,
+  load_from: {:wfc_app, "priv/native/libwfc"}

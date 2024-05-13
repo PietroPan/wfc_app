@@ -1,18 +1,24 @@
 # WfcApp
 
-To start your Phoenix server:
+This is a live version of the [Wave Function Collapse](https://github.com/mxgmn/WaveFunctionCollapse)
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+Algorithm in Rust and website in Phoenix/Elixir
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+### Create a project by uploading a tile set and a rule set
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+![Projects](https://github.com/PietroPan/wfc_app/blob/main/pictures/projects.png)
+![Project](https://github.com/PietroPan/wfc_app/blob/main/pictures/project.png)
 
-## Learn more
+### Generate from a empty grid or add some initial tiles
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+![Initialize](https://github.com/PietroPan/wfc_app/blob/main/pictures/intialize.png)
+![Generate](https://github.com/PietroPan/wfc_app/blob/main/pictures/generate.png)
+
+### Change tiles probabilities
+
+![Probabilities](https://github.com/PietroPan/wfc_app/blob/main/pictures/probabilities.png)
+![Rocks](https://github.com/PietroPan/wfc_app/blob/main/pictures/rocks.png)
+
+### Add new rules on the fly
+
+![Rules](https://github.com/PietroPan/wfc_app/blob/main/pictures/rules.png)

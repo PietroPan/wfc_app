@@ -18,6 +18,9 @@ module.exports = {
       },
       spacing: {
         's': '0.10rem',
+      },
+      gridTemplateColumns: {
+        '5l': 'repeat(5, minmax(0, 1fr))'
       }
     },
   },

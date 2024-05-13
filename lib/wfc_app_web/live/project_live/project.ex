@@ -5,24 +5,26 @@ defmodule WfcAppWeb.ProjectLive.Project do
   alias WfcApp.Projects
   alias WfcApp.Rust
 
+  # path = /app/lib/wfc_app-0.1.0/priv/static/...
+
   @impl true
   def mount(params, _session, socket) do
     %{current_user: user} = socket.assigns
-    Logger.debug "params info: #{inspect(params)}"
+    Logger.info "params info: #{inspect(params)}"
 
     project = Projects.get_project(params["project_id"])
 
-    Logger.debug "project: #{inspect(project)}"
+    Logger.info "project: #{inspect(project)}"
 
     image_list = project.wave
     |> String.split()
     |> Enum.map(fn x -> "#{project.images_path}#{x}" end)
     stream = Enum.zip(0..length(image_list),image_list)
     |> Enum.map(fn {k,v} -> %{:id => k, :tile => v} end)
-    Logger.debug "STREAM: #{inspect(stream)}"
+    Logger.info "STREAM: #{inspect(stream)}"
     {prob_map,prob_list} = create_prob_map("priv/static#{project.images_path}", project.probabilities)
 
-    Logger.debug "NEW RULES: #{inspect(project.new_rules)}"
+    Logger.info "NEW RULES: #{inspect(project.new_rules)}"
     n_rules = project.new_rules
     |> Enum.reduce([], fn rule, acc ->
       [tA,dir,tB] = rule |> String.split
@@ -85,6 +87,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
   end
 
   def create_prob_map(images_path, saved_probs) do
+    Logger.debug("TT: #{inspect(images_path)}")
     {:ok, images} = File.ls(images_path)
     prob_list = images
     |> Enum.sort()
@@ -106,13 +109,13 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
-    Logger.debug "project-SOCKET: #{inspect(project)}"
+    Logger.info "project-SOCKET: #{inspect(project)}"
 
     #Update probabilities
     nmap=socket.assigns.probs
     |> Enum.map(fn {k,_v} -> {k,String.to_integer(params[k])} end)
     |> Enum.reduce(%{}, fn {k,v}, acc -> Map.put(acc,k,v) end)
-    Logger.debug "NEW MAP: #{inspect(nmap)}"
+    Logger.info "NEW MAP: #{inspect(nmap)}"
     Projects.update_probabilities(project.id,nmap)
     s_tiles =
       socket.assigns.s_tiles
@@ -130,19 +133,19 @@ defmodule WfcAppWeb.ProjectLive.Project do
     Projects.update_starting_tiles(project.id,Map.put(project.starting_tiles, socket.assigns.pos, "#{project.images_path}#{params["tile"]}"))
     socket = socket
       |> push_navigate(to: ~p"/project/#{socket.assigns.project.id}")
-    Logger.debug "update_tile: #{inspect(socket)}"
+    Logger.info "update_tile: #{inspect(socket)}"
     {:noreply, socket}
   end
 
   @impl true
   def handle_event("save_pos", params, socket) do
-    Logger.debug "save_pos: #{inspect(params)}"
+    Logger.info "save_pos: #{inspect(params)}"
     {:noreply, socket |> assign(pos: params["pos"])}
   end
 
   @impl true
   def handle_event("debug", params, socket) do
-    Logger.debug "DEBUG: #{inspect(params)}"
+    Logger.info "DEBUG: #{inspect(params)}"
     {:noreply, socket}
   end
 
