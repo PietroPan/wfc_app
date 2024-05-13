@@ -11,7 +11,7 @@ Algorithm in Rust and website in Phoenix/Elixir
 
 ### Generate from a empty grid or add some initial tiles
 
-![Initialize](https://github.com/PietroPan/wfc_app/blob/main/pictures/intialize.png)
+![Initialize](https://github.com/PietroPan/wfc_app/blob/main/pictures/initialize.png)
 ![Generate](https://github.com/PietroPan/wfc_app/blob/main/pictures/generate.png)
 
 ### Change tiles probabilities
