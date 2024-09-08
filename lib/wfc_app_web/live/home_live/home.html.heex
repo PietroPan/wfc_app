@@ -3,14 +3,29 @@
 </div>
 <hr class="w-full h-px py-1 border-0 rounded my-4 bg-black">
 <div id="feed" phx-update="stream" class="pt-5 grid grid-cols-5 gap-5 justify-between overflow-hidden">
-    <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("new-project-modal")}>Create Project</.button>
+    <div class="grid grid-cols-1 gap-1">
+        <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("new-project-modal")}>Create Project From RuleSet</.button>
+        <.button type="button" class="hover:bg-white hover:text-black hover:border-black hover:border" phx-click={show_modal("new-project-modal-i")}>Create Project From Images</.button>
+    </div>
     <.modal id="new-project-modal">
         <.simple_form for={@form} phx-change="validate" phx-submit="save-post">
             <.input field={@form[:name]} type="text" label="Project Name" required/>
             <h1>Tiles</h1>
             <.live_file_input upload={@uploads.tiles} required/>
-            <h1>Rule Set</h1>
+            <h1>RuleSet</h1>
             <.live_file_input upload={@uploads.rule_set} required/>
+            <.button type="submit" phx-disable-with="Saving ...">Create Project</.button>
+        </.simple_form>
+    </.modal>
+    <.modal id="new-project-modal-i">
+        <.simple_form for={@form} phx-change="validate" phx-submit="from-images-project">
+            <.input field={@form[:name]} type="text" label="Project Name" required/>
+            <h1>Images</h1>
+            <.live_file_input upload={@uploads.images} required/>
+            <div class="flex">
+                <.input field={@form[:tile_x]} type="text" label="Tile X" required/>
+                <.input field={@form[:tile_y]} type="text" label="Tile Y" required/>
+            </div>
             <.button type="submit" phx-disable-with="Saving ...">Create Project</.button>
         </.simple_form>
     </.modal>

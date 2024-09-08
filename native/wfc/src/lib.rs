@@ -71,4 +71,42 @@ pub fn generate_image(rule_set: &str, tile_set: &str, symmetry: &str, (x,y): (i3
     return wave.list_tiles();
 }
 
-rustler::init!("Elixir.WfcApp.Rust", [add,generate_image]);
+#[rustler::nif]
+// Requires path to json rule set, path to directory with tiles, path to json with symmetry dictionary, size of image, result path to save image, name of image to save, map of probabilities of each tile, starting tiles in wave, new rules to be added after expanding the rule set
+pub fn generate_image_i(input_images: &str, (tile_x, tile_y): (u32, u32), (x,y): (i32,i32), tiles_path: &str, results: &str, name: &str, probabilities: HashMap<String,u32>, s_tiles: HashMap<String,String>, n_rules: Vec<&str>, n_tries: i32) -> String{
+    let mut rule_set = RuleSet::empty(tiles_path.to_string());
+
+    let mut i = 0;
+    let result_path = results.to_string();
+
+    render::get_tiles(input_images.to_string(),tile_x,tile_y,&tiles_path.to_string(),&mut rule_set);
+    rule_set.calculate_reach(0);
+    
+    let tile_set = TileSet::new_r(&rule_set);
+    let tile_set_size = tile_set.size;
+    let probabilities = HashMap::new();
+    
+    for _n in 0..n_tries{
+        let mut wave = Wave::new(&tile_set, (x,y),probabilities.clone(),&rule_set);
+        let res_wave = wave.loop_propagate(tile_set_size,&rule_set,Some(&result_path));
+        if res_wave == "invalid_wave" {
+            println!("Error: wave malformed")
+        } else {
+            println!("Found answer on attempt number: {}",i+1);
+            render::render_wave(&wave,format!("{}{}.png",result_path,name),&rule_set.tiles_path);
+            return wave.list_tiles();
+        }
+        i = i+1;
+        //wave.loop_propagate(tile_set_size,&n_rule_set,None);
+        //dbg!(wave);
+    }
+
+    if i==n_tries {
+        println!("Couldn't find a answer");
+    }
+
+    return "".to_string();
+//add prob n_rules s_ties
+}
+
+rustler::init!("Elixir.WfcApp.Rust", [add,generate_image_i]);
