@@ -49,7 +49,7 @@ pub fn generate_image(rule_set: &str, tile_set: &str, symmetry: &str, (x,y): (i3
     //probabilities.insert("r2.png".to_string(), 100);
 
     // Create a new wave and collapse regions with starting tiles
-    let mut wave = Wave::new(&tile_set, (x,y),probabilities);
+    let mut wave = Wave::new(&tile_set, (x,y),probabilities,&n_n_rule_set);
     for (k,v) in s_tiles.clone() {
         println!("{}",k);
         let pos: i32 = k.parse().unwrap();

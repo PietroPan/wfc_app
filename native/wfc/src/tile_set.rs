@@ -114,7 +114,10 @@ pub struct AdjacencyRule {
     pub up_tiles: Vec<String>, // Possible tiles up from that tile
     pub right_tiles: Vec<String>, // Possible tiles right from that tile
     pub down_tiles: Vec<String>, // Possible tiles down from that tile
-    pub left_tiles: Vec<String> // Possible tiles left from that tile
+    pub left_tiles: Vec<String>, // Possible tiles left from that tile
+    pub reach: Vec<i32>, // For every position gives the reach a tile has
+    //(-3 == not checked, -2 == found fork, -1 == found loop, >=0 == max number of tiles it can reach in that specific direction)
+    pub weight: i32
 }
 
 impl AdjacencyRule{
@@ -126,6 +129,8 @@ impl AdjacencyRule{
             right_tiles: right_tiles,
             down_tiles: down_tiles,
             left_tiles: left_tiles,
+            reach: vec![-3,-3,-3,-3],
+            weight: 1
         }
     }
 
@@ -137,6 +142,8 @@ impl AdjacencyRule{
             right_tiles: Vec::new(),
             down_tiles: Vec::new(),
             left_tiles: Vec::new(),
+            reach: vec![-3,-3,-3,-3],
+            weight: 1
         }
     }
 
@@ -159,6 +166,8 @@ impl AdjacencyRule{
             right_tiles: right_tiles,
             down_tiles: down_tiles,
             left_tiles: left_tiles,
+            reach: vec![-3,-3,-3,-3],
+            weight: 1
         }
     }
 }
@@ -187,6 +196,133 @@ impl RuleSet {
         };
         let adjacency_rules = rule_set.adjacency_rules;
     Ok(RuleSet{adjacency_rules, tiles_path})
+    }
+
+    pub fn empty(tiles_path: String) -> RuleSet{
+        let adjacency_rules = HashMap::new();
+        RuleSet{tiles_path, adjacency_rules}
+    }
+
+    pub fn get_weights(&self, tiles: Vec<&String>) -> Vec<f32> {
+        let mut weights: Vec<f32> = vec![];
+        for tile in tiles{
+            weights.push(self.adjacency_rules.get(tile).unwrap().weight as f32);
+        }
+        return weights;
+    }
+
+    pub fn increase_weight(&mut self,tile: String) {
+        let rule = self.adjacency_rules.get_mut(&tile).unwrap();
+        rule.weight+=1;
+    }
+
+    pub fn debug_reach(&self) {
+        let (up_reach, up_path) = self.calculate_reach_dir("img12.png".to_string(), 0, Vec::new(),1);
+        let (left_reach, left_path) = self.calculate_reach_dir("img12.png".to_string(), 1, Vec::new(),1);
+        let (down_reach, down_path) = self.calculate_reach_dir("img12.png".to_string(), 2, Vec::new(),1);
+        let (right_reach, right_path) = self.calculate_reach_dir("img12.png".to_string(), 3, Vec::new(),1);
+
+        dbg!("UP");
+        dbg!(up_reach);
+        dbg!(up_path);
+        dbg!("LEFT");
+        dbg!(left_reach);
+        dbg!(left_path);
+        dbg!("DOWN");
+        dbg!(down_reach);
+        dbg!(down_path);
+        dbg!("RIGHT");
+        dbg!(right_reach);
+        dbg!(right_path);
+    }
+
+    // For every tile in a rule set calculates how much that tile can reach in all four directions
+    pub fn calculate_reach(&mut self,range: i32) {
+
+        let old_rules = self.clone();
+
+        for tile in old_rules.adjacency_rules.keys(){
+            let rules = self.clone();
+            let rule = self.adjacency_rules.get_mut(tile).unwrap();
+            for i in 0..4 {
+                if rule.reach[i] == -3 {
+                    let (reach,_path) = rules.calculate_reach_dir(tile.to_string(), i as i32, Vec::new(),range);
+                    rule.reach[i] = reach;
+                    //show be using path to add new reaches to other tiles
+                }
+            }
+        }
+    }
+
+    //Calculate how much reach a tile has in a specific direction
+    pub fn calculate_reach_dir(&self, tile: String, dir: i32, mut path: Vec<String>, range: i32) -> (i32, Vec<String>) {
+
+        let rule = self.adjacency_rules.get(&tile).unwrap();
+        path.push(tile);
+        
+        let reach = rule.reach[dir as usize];
+        // if reach has already been calculated return it
+        if reach > -3 {
+            return (reach,path);
+        }
+
+        let dir_vec = match dir {
+            0 => &rule.up_tiles,
+            1 => &rule.left_tiles,
+            2 => &rule.down_tiles,
+            _ => &rule.right_tiles
+        };
+        let len_dir_vec = dir_vec.len() as i32;
+        // found fork
+        
+        let mut max_i = len_dir_vec;
+        if len_dir_vec > range {
+            max_i = range;
+            //return (-2,path);
+        }
+        // no more tiles in that direction
+        if len_dir_vec == 0 {
+            return (0,path);
+        }
+        
+        let (mut reach, mut new_path) = (0,Vec::new());
+        for i in 0..max_i{
+            let next_tile = &dir_vec[i as usize];
+            //found loop
+            if path.contains(&next_tile) {
+                return (-1,path);
+            }
+
+            let (i_reach,i_new_path) = self.calculate_reach_dir(next_tile.to_string(), dir, path.clone(),range);
+            //dbg!((i,i_reach,i_new_path.clone()));
+            if (reach < 0 && i_reach < 0) || (reach > 0 && i_reach > 0) {
+                if i_new_path.len() > new_path.len() {
+                    (reach, new_path) = (i_reach,i_new_path)
+                }
+            } else if i_reach < 0 {
+                (reach, new_path) = (i_reach,i_new_path)
+            }
+        } 
+
+        //let (reach,new_path) = self.calculate_reach_dir(next_tile.to_string(), dir, path);
+        if reach >= 0 && len_dir_vec > range {
+            return (-2,path);
+        } else if reach >= 0 {
+            return (reach+1,new_path);
+        } else {
+            return (reach,new_path);
+        }
+        
+    }
+
+    //Checks if a tile can reach the given values
+    pub fn can_reach(&self, tile: String, needed_reach: Vec<i32>) -> bool{
+        let mut can_reach = true;
+        let rule = self.adjacency_rules.get(&tile).unwrap();
+        for i in 0..4 {
+            can_reach = can_reach && (rule.reach[i] < 0 || rule.reach[i] >= needed_reach[i]) 
+        }
+        return can_reach;
     }
 
     // Transforms a RuleSet structure into a json file

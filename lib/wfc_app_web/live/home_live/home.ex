@@ -38,9 +38,9 @@ defmodule WfcAppWeb.HomeLive.Home do
     Logger.info "jason_path: #{inspect(jason_path)}"
     images_path = List.first(consume_files(socket,:tiles))
     Logger.info "images_path: #{inspect(images_path)}"
-    unzip_path = String.to_charlist("/priv/static#{images_path}ext")
+    unzip_path = String.to_charlist("priv/static#{images_path}ext")
     Logger.info "unzip_path: #{inspect(unzip_path)}"
-    full_images_path = String.to_charlist("/priv/static#{images_path}")
+    full_images_path = String.to_charlist("priv/static#{images_path}")
     Logger.info "full_images_path: #{inspect(full_images_path)}"
 
     case :zip.unzip(full_images_path, [{:cwd, unzip_path}]) do
@@ -54,7 +54,7 @@ defmodule WfcAppWeb.HomeLive.Home do
           |> Projects.save()
           |> case do
             {:ok, project} ->
-              image_list = Rust.generate_image("/priv/static#{project.jason_path}","/priv/static#{project.images_path}","symmetry.json",{10,10},"/priv/static/images/","final#{project.id}",%{},%{},[])
+              image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{10,10},"priv/static/images/","final#{project.id}",%{},%{},[])
               Logger.info "Image List: #{image_list}"
               Projects.update_wave(project.id,image_list,10,10)
               socket =

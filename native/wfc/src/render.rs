@@ -1,5 +1,9 @@
-use image::{DynamicImage, GenericImageView, Rgba, GenericImage, Pixel};
+use image::{DynamicImage, GenericImage, GenericImageView, ImageBuffer, Pixel, Rgba};
+use crate::tile_set::{AdjacencyRule, RuleSet};
 use crate::wave::{Wave,Region};
+use std::fs;
+use std::collections::HashMap;
+
 
 // Given a wave return the corresponding image
 pub fn render_wave(wave: &Wave, output_path: String,tile_set_path: &String){
@@ -124,4 +128,68 @@ fn blend_pixels(pixel1: Rgba<u8>, pixel2: Rgba<u8>, weight: f32) -> Rgba<u8> {
     let a = 255;
 
     Rgba([r, g, b, a])
+}
+
+pub fn get_tiles(images_path: String, x: u32, y: u32, tiles_path: &String, rule_set: &mut RuleSet) -> HashMap<ImageBuffer<Rgba<u8>, Vec<u8>>, String>{
+
+    let paths = fs::read_dir(images_path).unwrap();
+    let mut tiles = HashMap::new();
+
+    //let mut images_vec: Vec<DynamicImage> = Vec::new();
+    for path in paths {
+        //dbg!(path.clone());
+        let mut img = image::open(path.unwrap().path()).unwrap();
+        tiles = get_image_tiles(&mut img, x, y, &mut tiles.clone(), tiles_path, rule_set);
+        //images_vec.push(img);
+    }
+
+    tiles
+
+}
+
+fn get_image_tiles(image: &mut DynamicImage, x: u32, y: u32, tiles: &mut HashMap<ImageBuffer<Rgba<u8>, Vec<u8>>, String>, tiles_path: &String,  rule_set: &mut RuleSet) -> HashMap<ImageBuffer<Rgba<u8>, Vec<u8>>, String> {
+    let mut num = tiles.len();
+
+    //let mut matrix = HashMap::new();
+    let mut last_tile: String="".to_string();
+    let mut above_tiles: Vec<String> = Vec::new();
+
+    // Save a black default tile
+    //let mut img = RgbImage::new(32, 32);
+    //img.save(format!("{}/imgD.png",tiles_path)).unwrap();
+
+    for i in 0..(image.height()/y){
+        for j in 0..(image.width()/x){
+            //dbg!((i,j));
+            let tile: ImageBuffer<Rgba<u8>, Vec<u8>> = image.sub_image(x*j, y*i, x, y).to_image();
+            let tile_name = tiles.get(&tile);
+            let atile_name;
+            if tile_name==None {
+                tile.save(format!("{}/img{}.png",tiles_path,num)).unwrap();
+                tiles.insert(tile,format!("img{}.png",num));
+                atile_name = format!("img{}.png",num);
+                num+=1;
+                rule_set.adjacency_rules.insert(atile_name.clone(), AdjacencyRule::new_empty("@".to_string()));
+            } else {
+                atile_name = tile_name.unwrap().clone();
+                rule_set.increase_weight(atile_name.clone());
+            }
+            if i != 0 {
+                rule_set.add_rule(format!("@"), atile_name.clone(), 0, format!("@"), above_tiles.get(j as usize).unwrap().clone());
+                // add above rule
+            }
+            if j != 0 {
+                rule_set.add_rule(format!("@"), atile_name.clone(), 3, format!("@"), last_tile.clone());
+                // add before rule
+            }
+            above_tiles.push(atile_name.clone());
+            last_tile=atile_name.clone();
+        }
+        if i != 0 {
+            let (_,new) = above_tiles.split_at((image.width()/x) as usize);
+            above_tiles = new.to_vec();
+        }
+    }
+
+    tiles.clone()
 }
