@@ -80,21 +80,39 @@ pub fn generate_image_i(input_images: &str, (tile_x, tile_y): (u32, u32), (x,y):
     let result_path = results.to_string();
 
     render::get_tiles(input_images.to_string(),tile_x,tile_y,&tiles_path.to_string(),&mut rule_set);
-    rule_set.calculate_reach(0);
+    rule_set.calculate_reach(1);
     
     let tile_set = TileSet::new_r(&rule_set);
     let tile_set_size = tile_set.size;
-    let probabilities = HashMap::new();
+
+    // Add new rules to the rule set
+    for rule in n_rules.clone() {
+        let srule: Vec<&str> = rule.split(' ').collect();
+        println!("{} {} {}",srule[0],srule[1],srule[2]);
+        rule_set.add_rule(format!("Q"),srule[2].to_string(),srule[1].parse::<u32>().unwrap(),format!("Q"),srule[0].to_string());
+    }
+
+    let mut wave = Wave::new(&tile_set, (x,y),probabilities.clone(),&rule_set);
+    for (k,v) in s_tiles.clone() {
+        println!("{}",k);
+        let pos: i32 = k.parse().unwrap();
+        let pos_x = pos % x;
+        let pos_y = pos/x;
+        wave.set_pos((pos_x,pos_y),v,&rule_set);
+    }
+    dbg!(wave.clone());
+
     
     for _n in 0..n_tries{
-        let mut wave = Wave::new(&tile_set, (x,y),probabilities.clone(),&rule_set);
-        let res_wave = wave.loop_propagate(tile_set_size,&rule_set,Some(&result_path));
+        //let mut wave = Wave::new(&tile_set, (x,y),probabilities.clone(),&rule_set);
+        let mut n_wave = wave.clone();
+        let res_wave = n_wave.loop_propagate(tile_set_size,&rule_set,Some(&result_path));
         if res_wave == "invalid_wave" {
             println!("Error: wave malformed")
         } else {
             println!("Found answer on attempt number: {}",i+1);
-            render::render_wave(&wave,format!("{}{}.png",result_path,name),&rule_set.tiles_path);
-            return wave.list_tiles();
+            render::render_wave(&n_wave,format!("{}{}.png",result_path,name),&rule_set.tiles_path);
+            return n_wave.list_tiles();
         }
         i = i+1;
         //wave.loop_propagate(tile_set_size,&n_rule_set,None);
@@ -109,4 +127,4 @@ pub fn generate_image_i(input_images: &str, (tile_x, tile_y): (u32, u32), (x,y):
 //add prob n_rules s_ties
 }
 
-rustler::init!("Elixir.WfcApp.Rust", [add,generate_image_i]);
+rustler::init!("Elixir.WfcApp.Rust", [add,generate_image,generate_image_i]);

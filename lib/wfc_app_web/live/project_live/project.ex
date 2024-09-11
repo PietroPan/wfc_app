@@ -43,6 +43,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
       |> stream(:images, stream)
       |> stream(:n_rules, n_rules)
       |> assign(:s_tiles, project.starting_tiles)
+      |> assign(:n_tries, project.n_tries)
       |> assign(tileA: "/images/grid.png" )
       |> assign(tileB: "/images/grid.png" )
       |> allow_upload(:n_rule_set, accept: ~w(.json), max_entries: 1)
@@ -109,6 +110,7 @@ defmodule WfcAppWeb.ProjectLive.Project do
 
     x = String.to_integer(params["x"])
     y = String.to_integer(params["y"])
+    n_tries = String.to_integer(params["n_tries"])
     Logger.info "project-SOCKET: #{inspect(project)}"
 
     #Update probabilities
@@ -121,10 +123,19 @@ defmodule WfcAppWeb.ProjectLive.Project do
       socket.assigns.s_tiles
       |> Enum.map(fn {k,v} -> {k,Path.basename(v)} end)
       |> Enum.reduce(%{}, fn {k,v}, acc -> Map.put(acc,k,v) end)
-    image_list = Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{x,y},"priv/static/images/","final#{project.id}",nmap,s_tiles,project.new_rules)
-    Projects.update_wave(project.id,image_list,x,y)
-
-    {:noreply, socket}
+    image_list = cond do
+      project.jason_path != nil ->
+        Rust.generate_image("priv/static#{project.jason_path}","priv/static#{project.images_path}","symmetry.json",{x,y},"priv/static/images/","final#{project.id}",nmap,s_tiles,project.new_rules)
+      true ->
+        Rust.generate_image_i("priv/static#{project.input_images_path}",{project.tile_x,project.tile_y},{x,y},"priv/static#{project.images_path}","priv/static/images/","final#{project.id}",nmap,s_tiles,project.new_rules,project.n_tries)
+      end
+    socket = case image_list do
+      "" -> socket |> put_flash(:error, "Couldn't find an answer!")
+      _ ->
+        Projects.update_wave(project.id,image_list,x,y,n_tries)
+        socket
+      end
+    {:noreply, socket |> redirect(to: ~p"/project/#{socket.assigns.project.id}")}
   end
 
   @impl true

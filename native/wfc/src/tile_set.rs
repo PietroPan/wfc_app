@@ -295,8 +295,8 @@ impl RuleSet {
 
             let (i_reach,i_new_path) = self.calculate_reach_dir(next_tile.to_string(), dir, path.clone(),range);
             //dbg!((i,i_reach,i_new_path.clone()));
-            if (reach < 0 && i_reach < 0) || (reach > 0 && i_reach > 0) {
-                if i_new_path.len() > new_path.len() {
+            if (reach < 0 && i_reach < 0) || (reach >= 0 && i_reach >= 0) {
+                if i_new_path.len() >= new_path.len() {
                     (reach, new_path) = (i_reach,i_new_path)
                 }
             } else if i_reach < 0 {

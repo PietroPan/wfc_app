@@ -12,6 +12,7 @@
                 <.input field={@form[:x]} type="text" label="X" value={@project.x} required/>
                 <.input field={@form[:y]} type="text" label="Y" value={@project.y} required/>
             </div>
+            <.input field={@form[:n_tries]} type="text" label="Number of max tries" value={@project.n_tries} required/>
             <h1 class="font-bold"> Change Tile Probabilities: </h1>
             <.button type="button" phx-click="clear_probs">
                 Reset Probabilities
